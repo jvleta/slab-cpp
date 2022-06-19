@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "build:slab": "rm -rf SLAB/build && mkdir SLAB/build && cd SLAB/build && cmake .. && make"
   },
   "repository": {
     "type": "git",
