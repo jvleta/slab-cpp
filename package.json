@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/jvleta/slabbath/issues"
   },
-  "homepage": "https://github.com/jvleta/slabbath#readme"
+  "homepage": "https://github.com/jvleta/slabbath#readme",
+  "devDependencies": {
+    "jest": "^28.1.1"
+  }
 }
