@@ -1,24 +1,30 @@
-import logo from './logo.svg';
-import './App.css';
+import styled from "styled-components";
+import { FormGroup, Label, Input, Message } from "./Forms";
+
+const Body = styled.body`
+  background: white;
+`;
+
+const Title = styled.h1`
+  font-size: 1.5em;
+  text-align: center;
+`;
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Body>
+      <Title>Slabbath</Title>
+      <FormGroup>
+        <Label>Wind Speed</Label>
+        <Input id="windspeed" />
+        <Message>This is the validation message</Message>
+      </FormGroup>
+      <FormGroup>
+        <Label>Viscosity of Air</Label>
+        <Input id="airviscosity"/>
+        <Message>This is the validation message</Message>
+      </FormGroup>
+    </Body>
   );
 }
 
