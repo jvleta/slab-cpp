@@ -1,3 +1,4 @@
 program runslab
-  call state()
+  use slabwrapper
+  call callstate()
 end program
