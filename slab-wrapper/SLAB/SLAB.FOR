@@ -138,7 +138,7 @@ c
 c    functions used in main calculation
 c        uafn
 c
-      program state
+      subroutine state
 
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
