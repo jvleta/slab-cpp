@@ -3017,8 +3017,11 @@ c  stores the output variables
 
 
       subroutine errint(x,erf,erfc)
-
+c
+c  TODO: Investigate replacing this routine with an equivalent routine from an external library.
+c
 c  calculates the error function
+c
 
 c     cic               errint         c3.2-020
       implicit real*8(a-h,o-z)
