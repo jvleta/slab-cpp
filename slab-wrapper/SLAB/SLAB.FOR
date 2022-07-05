@@ -206,7 +206,7 @@ c  ============
   108 format (f10.3)
 
   110 read (2,108) z0
-       if(z0 .lt. 0.) stop
+       if(z0 .lt. 0.) return
 
       read (2,108) za,ua,ta,rh,stab
       stabin = stab
@@ -867,7 +867,11 @@ c ============================
       w = u*he/(sr3*dx)
       wp(1) = w
       al = ala
-      if(al) 290,291,291
+      if (al < 0) then
+         go to 290
+      else
+         go to 291
+      end if
   290 stby = 1. - rcf*10.*al
       go to 292
   291 stby = 1./(1.+rcf*10.*al)
@@ -892,8 +896,9 @@ c ===============================================
       do 355 nx=nxi,msfm
       do 345 ns=1,nssm
 
-      do 306 i=1,11
-  306 sum(i) = 0.
+      do i=1,11
+        sum(i) = 0.
+      end do
       dxxi(1) = .5*dx
       dxxi(2) = .5*dx
       dxxi(3) = dx
@@ -1393,8 +1398,10 @@ c ===============================================
 
       do 660 ns = 1,nssm
 
-      do 636 i=1,11
-  636 sum(i) = 0.
+      do i=1,11
+        sum(i) = 0.
+      end do
+
       dxxi(1) = .5*dx
       dxxi(2) = .5*dx
       dxxi(3) = dx
@@ -3027,14 +3034,18 @@ c     scf=two**(c1**2-nbc)
       data one,two,four,ulps/1.,2.,4.,1./
 c     data toler,scf/3.5527136788005e-15,8.7777985100258e304/
       data toler,scf/3.5527136788005e-15,3.4028235e+38/
-      if(x) 2,1,2
+      if (x == 0) then
+         go to 1
+      else
+         go to 2
+      end if
     1 erf=0.
       erfc=one
       return
     2 y=abs(x)
       ysq=y**2
-      if(y-ulps)3,3,4
-    4 if(y-ulcf) 10,10,11
+      if ((y - ulps) <= 0.0) go to 3
+    4 if((y-ulcf) <= 0.0) go to 10
    11 erf=one
       erfc=0.
       go to 7
@@ -3045,10 +3056,10 @@ c     data toler,scf/3.5527136788005e-15,8.7777985100258e304/
     6 dn=dn+two
       tn=pwr*tn/dn
       sum=tn+sum
-      if(tn-toler) 5,6,6
+      if((tn-toler) >= 0.0) go to 6
     5 erf=(sum+one)*trrtpi*y*exp(-ysq)
       erfc=one-erf
-    7 if(x)8,9,9
+    7 if(x >= 0.0) go to 9
     8 erf=-erf
       erfc=two-erfc
     9 return
@@ -3063,8 +3074,8 @@ c     data toler,scf/3.5527136788005e-15,8.7777985100258e304/
       fn=bn*fnm1+an*fnm2
       gn=bn*gnm1+an*gnm2
       f=fn/gn
-      if(abs(one-(f/prev))-toler) 12,12,13
-   13 if(prev-f) 17,17,18
+      if((abs(one-(f/prev))-toler) <= 0.0) go to 12
+   13 if((prev-f) > 0.0) go to 18
    17 if(gn.lt.scf) goto 16
       go to 15
    15 fn=fn/scf
