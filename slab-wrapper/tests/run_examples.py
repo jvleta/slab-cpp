@@ -6,7 +6,7 @@ path_to_input = os.path.join(build, 'input')
 path_to_predict = os.path.join(build, 'predict')
 
 def run_slab(input_file, output_file):
-    os.system(f'../build/Slab {input_file} {output_file}')
+    os.system(f'../src/build/Slab {input_file} {output_file}')
 
 if __name__ == "__main__":
     run_slab('INPR1', 'OUTPR1')

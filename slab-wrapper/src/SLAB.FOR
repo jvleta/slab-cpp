@@ -138,7 +138,8 @@ c
 c    functions used in main calculation
 c        uafn
 c
-      subroutine state(input_file, output_file)
+      subroutine state(legacy, )
+      use slab_data
 
       character(len=*) input_file, output_file
 
