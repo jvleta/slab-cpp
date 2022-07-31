@@ -1,8 +1,5 @@
-cmake_minimum_required(VERSION 3.20)
-
 enable_language(Fortran)
-project(SlabWrapper)
+add_library(slabwrapper slab_fortran_wrapper.f90 slab_c_wrapper.f90)
 
-add_library(SlabWrapper SLAB.FOR slabwrapper.f90)
-add_executable(Slab runslab.f90)
-target_link_libraries(Slab SlabWrapper)
+add_executable(demo main.cpp)
+target_link_libraries(demo slabwrapper)

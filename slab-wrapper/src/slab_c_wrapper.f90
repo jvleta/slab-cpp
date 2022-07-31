@@ -1,6 +1,11 @@
 module slab_c_wrapper
-  use slab_data
+  use, intrinsic :: iso_c_binding
+  use slab_fortran_wrapper
 
-  subroutine run_slab()
+contains  
+
+  subroutine call_dostuff() bind(c, name='dostuff')
+    call dostuff()
   end subroutine
+
 end module

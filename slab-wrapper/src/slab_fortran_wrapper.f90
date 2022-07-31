@@ -1,3 +1,6 @@
 module slab_fortran_wrapper
-  use slab_data
+contains
+  subroutine dostuff()
+    write(*,*) "Hello from Fortran!!!"
+  end subroutine
 end module
