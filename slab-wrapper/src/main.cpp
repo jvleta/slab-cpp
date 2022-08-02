@@ -13,5 +13,8 @@
 
 int main() {
   dostuff();
+  for (int i = 1; i <= 4; i++) {
+    run_test_case(&i);
+  }
   return 0;
 }

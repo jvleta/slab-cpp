@@ -138,8 +138,7 @@ c
 c    functions used in main calculation
 c        uafn
 c
-      subroutine state(legacy, )
-      use slab_data
+      subroutine state(input_file, output_file)
 
       character(len=*) input_file, output_file
 
@@ -177,7 +176,7 @@ c  constants for calculating stability regions
 
       dimension sum(15),dxxi(3),dxrk(4)
 
-      open(2,file=input_file,status='old')
+      open(2,file=input_file)
       open(3,file=output_file)
 
 
@@ -277,7 +276,7 @@ c  write input
 c =============
 
 
-      write (3,114) idspl,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,
+      write (6,114) idspl,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,
      1 spc,ts,qs,as,tsd,qtis,hs,tav,xffm,(i,zp(i),i=1,4)
 
   114 format (///'problem input'//'  idspl =',5x,i5/'  ncalc =',5x,i5/
@@ -289,12 +288,12 @@ c =============
      1 '  tsd   =',f10.0/'  qtis  =',f10.2/'  hs    =',f10.2/
      1 '  tav   =',f10.2/'  xffm  =',f10.2/('  zp(',i1,') =',f10.2))
 
-      write (3,115) z0,za,ua,ta,rh,stabin
+      write (6,115) z0,za,ua,ta,rh,stabin
   115 format ('  z0    =',f10.6/'  za    =',f10.2/'  ua    =',f10.2/
      1 '  ta    =',f10.2/,'  rh    =',f10.2/,'  stab  =',f10.2)
 
       if (stabin .eq. 0.) then
-      write (3,112) ala
+      write (6,112) ala
   112 format ('  ala   =',f10.4)
       endif
 
@@ -428,7 +427,7 @@ c  calculate ambient meteorological values
 
 c  check if source below mixing layer height
       if (hs .gt. (hmx-bs)) then
-         write (3,140) hs,hmx,bs
+         write (6,140) hs,hmx,bs
   140   format ('input source height hs is greater than the',/,
      1   ' calculated mixing layer height hmx minus ',/,
      1   'the stack half width bs.  program terminated.',/,1p,
@@ -3140,7 +3139,7 @@ c  writes the input values used in the problem
 
 c   release gas properties
 
-      write (3,101) wms,cps,ts,rhos,tbp,cmed,cpsl,dhe,rhosl,spa,spb,spc
+      write (6,101) wms,cps,ts,rhos,tbp,cmed,cpsl,dhe,rhosl,spa,spb,spc
 
   101 format (//'release gas properties'//,1p,
      1 ' molecular weight of source gas (kg)     ',10x,'- wms  =',e12.4/
@@ -3158,7 +3157,7 @@ c   release gas properties
 
 c   spill characteristics
 
-      write (3,102) idspl,qs,tsd,qtcs,qtis,as,ws,bs,hs,us
+      write (6,102) idspl,qs,tsd,qtcs,qtis,as,ws,bs,hs,us
 
   102 format (//'spill characteristics'//,1p,
      1 ' spill type                              ',10x,'- idspl=',i12/
@@ -3174,7 +3173,7 @@ c   spill characteristics
 
 c   field parameters
 
-      write (3,103) tav,hmx,xffm,(zp(i),i=1,4)
+      write (6,103) tav,hmx,xffm,(zp(i),i=1,4)
 
   103 format (//'field parameters'//,1p,
      1 ' concentration averaging time (s)        ',10x,'- tav  =',e12.4/
@@ -3187,7 +3186,7 @@ c   field parameters
 
 c   ambient meteorological variables
 
-      write (3,104) wmae,cpaa,rhoa,za,pa,ua,ta,rh,uastr,stab,ala,z0
+      write (6,104) wmae,cpaa,rhoa,za,pa,ua,ta,rh,uastr,stab,ala,z0
 
   104 format (//'ambient meteorological properties'//,1p,
      1 ' molecular weight of ambient air (kg)   ',10x,'- wmae  =',e12.4/
@@ -3207,7 +3206,7 @@ c   ambient meteorological variables
 
 c   additional parameters
 
-      write (3,105) ncalc,nssm,grav,rr,xk
+      write (6,105) ncalc,nssm,grav,rr,xk
 
   105 format(//'additional parameters'//,1p,
      1 ' sub-step multiplier                    ',10x,'- ncalc =',i12/
@@ -3258,13 +3257,13 @@ c  writes the instantaneous spatially averaged cloud properties
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
-      write (3,95)
-      write (3,101)
-      write (3,102) (xp(i),zcp(i),hp(i),bbp(i),bp(i),bbxp(i),
+      write (6,95)
+      write (6,101)
+      write (6,102) (xp(i),zcp(i),hp(i),bbp(i),bp(i),bbxp(i),
      1 bxp(i),cvp(i),rhop(i),tp(i),up(i),uap(i),i=1,61)
 
-      write (3,103)
-      write (3,104) (xp(i),cmp(i),cmevp(i),cmdap(i),cmwp(i),
+      write (6,103)
+      write (6,104) (xp(i),cmp(i),cmevp(i),cmdap(i),cmwp(i),
      1 cmwvp(i),wcp(i),vgp(i),ugp(i),wp(i),vp(i),vxp(i),i=1,61)
 
    95 format('1'//'instantaneous spatially averaged cloud parameters')
@@ -3481,7 +3480,7 @@ c  write the concentration contour parameters
 
       if (idspl .eq. 4) then
 
-      write (3,105) tav
+      write (6,105) tav
   105 format ('1'//'time averaged (tav =',f6.0,' s) volume',
      1 ' concentration:  concentration contour parameters'//
      1 'c(x,y,z,t) = cc(t) * (erf(xa)-erf(xb)) * (erf(ya)-erf(yb)) *',
@@ -3492,7 +3491,7 @@ c  write the concentration contour parameters
      1 5x,'       z = height (m)'/
      1 5x,'       t = time (s)'/)
 
-      write (3,106) (tccp(i),ccp(i),bp(i),betacp(i),zcp(i),sigp(i),
+      write (6,106) (tccp(i),ccp(i),bp(i),betacp(i),zcp(i),sigp(i),
      1 xccp(i),bxp(k),betaxp(i),i=1,61)
   106 format (5x,'     erf = error functon'/
      1 5x,'      xa = (x-xc+bx)/(sr2*betax)'/
@@ -3508,7 +3507,7 @@ c  write the concentration contour parameters
 
       else
 
-      write (3,107) tav
+      write (6,107) tav
   107 format ('1'//'time averaged (tav =',f6.0,' s) volume',
      1 ' concentration:  concentration contour parameters'//
      1 'c(x,y,z,t) = cc(x) * (erf(xa)-erf(xb)) * (erf(ya)-erf(yb)) *',
@@ -3519,7 +3518,7 @@ c  write the concentration contour parameters
      1 5x,'       z = height (m)'/
      1 5x,'       t = time (s)'/)
 
-      write (3,108) (xp(i),ccp(i),bp(i),betacp(i),zcp(i),sigp(i),
+      write (6,108) (xp(i),ccp(i),bp(i),betacp(i),zcp(i),sigp(i),
      1 tccp(i),xccp(i),bxp(i),betaxp(i), i=1,61)
   108 format (5x,'     erf = error functon'/
      1 5x,'      xa = (x-xc+bx)/(sr2*betax)'/
@@ -3540,11 +3539,11 @@ c  write the concentration in the zp(i) plane
 
       do 125 j=1,nzpm
 
-      write (3,110) tav,zp(j)
+      write (6,110) tav,zp(j)
   110 format ('1'//'time averaged (tav =',f6.0,' s) volume',
      1 ' concentration:  concentration in the z =',f6.2,' plane.')
 
-      write (3,115) (xp(i),timp(i),tcld(i),bbcp(i),(cvpt(k,j,i),k=1,6),
+      write (6,115) (xp(i),timp(i),tcld(i),bbcp(i),(cvpt(k,j,i),k=1,6),
      1 i=1,61)
   115 format (//'    downwind    time of      cloud     effective',15x,
      1 'average concentration (volume fraction) at (x,y,z)'/
@@ -3557,12 +3556,12 @@ c  write the concentration in the zp(i) plane
 
 c  write the maximum concentration along centerline
 
-      write (3,130) tav
+      write (6,130) tav
   130 format ('1'//'time averaged (tav =',f6.0,' s) volume',
      1 ' concentration:  maximum concentration (volume',
      1 ' fraction) along centerline.')
 
-      write (3,135) (xp(i),zm(i),cvpm(i),timp(i),tcld(i),i=1,61)
+      write (6,135) (xp(i),zm(i),cvpm(i),timp(i),tcld(i),i=1,61)
   135 format (//'    downwind                 maximum',
      1 4x,'time of',6x,'cloud'/
      1 4x,'distance',5x,'height',3x,'concentration',1x,'max conc',4x,

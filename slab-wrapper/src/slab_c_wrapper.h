@@ -75,6 +75,7 @@ extern "C" {
 #endif
 
 void dostuff();
+void run_test_case(int *test_number);
 
 #ifdef __cplusplus
 }
