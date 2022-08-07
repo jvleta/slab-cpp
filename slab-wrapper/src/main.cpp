@@ -14,6 +14,7 @@
 int main() {
   dostuff();
   for (int i = 1; i <= 4; i++) {
+    std::cout << "example " << i << "\n ";
     run_test_case(&i);
   }
   return 0;

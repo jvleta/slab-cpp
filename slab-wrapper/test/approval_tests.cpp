@@ -1,32 +1,29 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <chrono>
+#include <thread>
 
 #include "gtest/gtest.h"
 #include "ApprovalTests/Approvals.h"
+
+#include "../src/slab_io.h"
+#include "../src/slab_c_wrapper.h"
 
 using namespace ApprovalTests;
 
 namespace fs = std::filesystem;
 
-std::string read_file(fs::path path) {
-  // Open the stream to 'lock' the file.
-  std::ifstream f(path, std::ios::in | std::ios::binary);
-
-  // Obtain the size of the file.
-  const auto sz = fs::file_size(path);
-
-  // Create a buffer.
-  std::string result(sz, '\0');
-
-  // Read the whole file into the buffer.
-  f.read(result.data(), sz);
-
-  return result;
-}
 
 TEST(slab_tests, INPR1) {
-  const auto output = read_file("OUTPR1");
+
+  int n = 1;
+  run_test_case(&n);
+std::chrono::milliseconds timespan(10000); // or whatever
+
+std::this_thread::sleep_for(timespan);
+  const auto output = read_file("/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/OUTPR1");
+
   ApprovalTests::Approvals::verify(output);
 }
 
