@@ -1,35 +1,20 @@
 module slab_fortran_wrapper
+implicit none
 contains
   
   subroutine dostuff()
     write(*,*) "Hello from Fortran!!!"
   end subroutine
 
-
   subroutine run_test_case(test_number)
-
-  integer :: test_number
-  character(len=256) input_file, output_file
-
-  select case(test_number)
-
-! /Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/INPR1
-  case(1)
-    input_file = "/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/INPR1"
-    output_file = "/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/OUTPR1"
-  case(2)
-    input_file = "/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/INPR2"
-    output_file = "/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/OUTPR2"
-  case(3)
-    input_file = "/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/INPR3"
-    output_file = "/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/OUTPR3"
-  case(4)
-    input_file = "/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/INPR4"
-    output_file = "/Users/jimmy/Documents/GitHub/disperse/slab-wrapper/src/OUTPR4"
-  end select
-
-  call state(input_file, output_file)
-
+    integer :: test_number
+    character(len=256) :: root, input_file, output_file
+    character(len=10) :: test_number_str
+    root = "/Users/jimmy/Documents/GitHub/lastra/src/"
+    write(test_number_str, "(I1)") test_number
+    input_file = trim(root)//"INPR"//trim(test_number_str)
+    output_file = trim(root)//"OUTPR"//trim(test_number_str)
+    call state(input_file, output_file)
   end subroutine
   
 end module

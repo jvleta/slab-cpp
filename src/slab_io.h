@@ -1,5 +1,3 @@
 #pragma once
 
-namespace fs = std::filesystem;
-
-std::string read_file(fs::path path);
+std::string read_file(std::string path);
