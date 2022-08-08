@@ -1,74 +1,63 @@
 #pragma once
 
-// struct SlabInput {
-//   int idspl;
-//   int ncalc;
-//   double wms;
-//   double cps;
-//   double tbp;
-//   double cmed0;
-//   double dhe;
-//   double cpsl;
-//   double rhosl;
-//   double spb;
-//   double spc;
-//   double ts;
-//   double qs;
-//   double as;
-//   double tsd;
-//   double qtis;
-//   double hs;
-//   double tav;
-//   double xffm;
-//   double zp1;
-//   double zp2;
-//   double zp3;
-//   double zp4;
-//   double z0;
-//   double za;
-//   double ua;
-//   double ta;
-//   double rh;
-//   double stab;
-//   double ala;
-// };
+struct SlabData {
 
-// SlabInput get_problem1() {
-//   SlabInput s;
-//   s.idspl = 1;
-//   s.ncalc = 1;
-//   s.wms = 0.016043;
-//   s.cps = 2238.00;
-//   s.tbp = 111.70;
-//   s.cmed0 = 0.00;
-//   s.dhe = 509900.;
-//   s.cpsl = 3348.50;
-//   s.rhosl = 424.10;
-//   s.spb = -1.00;
-//   s.spc = 0.00;
-//   s.ts = 111.70;
-//   s.qs = 117.00;
-//   s.as = 657.00;
-//   s.tsd = 107.;
-//   s.qtis = 0.00;
-//   s.hs = 0.00;
-//   s.tav = 10.00;
-//   s.xffm = 1000.00;
-//   s.zp1 = 0.00;
-//   s.zp2 = 0.00;
-//   s.zp3 = 0.00;
-//   s.zp4 = 0.00;
-//   s.z0 = 0.000200;
-//   s.za = 2.88;
-//   s.ua = 1.92;
-//   s.ta = 306.00;
-//   s.rh = 4.60;
-//   s.stab = 0.00;
-//   s.ala = 0.0665;
-//   return s;
-// };
+  // Release Gas Properties
+  double source_gas_molecular_weight;
+  double vapor_heat_capacity;
+  double source_gas_temperature;
+  double source_gas_density;
+  double boiling_point_temperature;
+  double liquid_mass_fraction;
+  double liquid_heat_capacity;
+  double heat_of_vaporization;
+  double source_liquid_density;
+  double saturation_pressure_constant_a;
+  double saturation_pressure_constant_b;
+  double saturation_pressure_constant_c;
+  
+  // Spill Characteristics
+  int spill_type;
+  double mass_source_rate;
+  double continuous_source_duration;
+  double continuous_source_mass;
+  double instantaneous_source_mass;
+  double source_area;
+  double vertical_vapor_velocity;
+  double source_half_weight;
+  double source_height;
+  double horizontal_vapor_velocity;
+  
+  // Field Parameters
+  double concentration_averaging_time;
+  double concentration_measurement_height_1;
+  double concentration_measurement_height_2;
+  double concentration_measurement_height_3;
+  double concentration_measurement_height_4;
+  
+  // Ambient Meteorological Properties
+  double ambient_air_molecular_properties;
+  double ambient_air_heat_capacity;
+  double ambient_air_density;
+  double ambient_measurement_height;
+  double ambient_atmospheric_pressure;
+  double ambient_wind_speed;
+  double ambient_temperature;
+  double relative_humidity;
+  double ambient_friction_velocity;
+  double atmospheric_stability_class_value;
+  double inverse_monin_obukhov_length;
+  double surface_roughness_height;
 
-// void run_slab(SlabInput input) {}
+  // Additional Parameters
+  int substep_multiplier;
+  int num_calculation_substeps;
+  double gravitational_constant;
+  double gas_constant;
+  double von_karman_constant;
+  
+};
+
 
 #ifdef __cplusplus
 extern "C" {
