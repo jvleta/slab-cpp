@@ -1855,7 +1855,10 @@ c
 
 
       function uafn(z,z0,ala0,zl,hmx,zt,cu1,cu2)
-
+      implicit none
+      real(4), intent(in) :: z, z0, ala0, zl, hmx, zt, cu1, cu2
+      real(4) :: gus, phmi, uatm, xu, xu0
+      real(4) :: uafn
 c  calculates the normalized ambient wind speed at height z
 
       if (z .lt. zt) then
