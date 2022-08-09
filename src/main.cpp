@@ -4,18 +4,15 @@
 
 #include "slab_c_wrapper.h"
 
-// void run_slab_examples() {
-//   std::vector<SlabInput> examples{Problem1, Problem2, Problem3, Problem4};
-//   for (const auto example : examples {
-//     run_slab(example);
-//   }
-// }
+SlabData * get_INPTR1_data() {
+  SlabData *s = new SlabData();
+  s->spill_type = 1;
+  s->num_calculation_substeps = 1;
+  return s;
+};
 
 int main() {
-  dostuff();
-  for (int i = 1; i <= 4; i++) {
-    std::cout << "example " << i << "\n ";
-    run_test_case(&i);
-  }
+  auto s = get_INPTR1_data();
+  dostuff((void *)&s);
   return 0;
 }

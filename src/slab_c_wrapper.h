@@ -1,5 +1,8 @@
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 struct SlabData {
 
   // Release Gas Properties
@@ -15,7 +18,7 @@ struct SlabData {
   double saturation_pressure_constant_a;
   double saturation_pressure_constant_b;
   double saturation_pressure_constant_c;
-  
+
   // Spill Characteristics
   int spill_type;
   double mass_source_rate;
@@ -27,14 +30,14 @@ struct SlabData {
   double source_half_weight;
   double source_height;
   double horizontal_vapor_velocity;
-  
+
   // Field Parameters
   double concentration_averaging_time;
   double concentration_measurement_height_1;
   double concentration_measurement_height_2;
   double concentration_measurement_height_3;
   double concentration_measurement_height_4;
-  
+
   // Ambient Meteorological Properties
   double ambient_air_molecular_properties;
   double ambient_air_heat_capacity;
@@ -55,15 +58,9 @@ struct SlabData {
   double gravitational_constant;
   double gas_constant;
   double von_karman_constant;
-  
 };
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void dostuff();
+void dostuff(void* slabdata_c_ptr);
 
 void run_test_case(int *test_number);
 
