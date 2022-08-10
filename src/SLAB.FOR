@@ -140,6 +140,7 @@ c        uafn
 c
       subroutine state(input_file, output_file)
 
+
       character(len=*) input_file, output_file
 
 
@@ -1912,9 +1913,9 @@ c
 c  calculates the gradients used in the steady state plume conservation
 c   equations
 c
-      integer :: idspl,nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      integer :: idspl,nx,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2015,9 +2016,9 @@ c
 c  calculates the gradients used in the transient puff convervation
 c    equations
 c
-      integer :: idspl,nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      integer :: idspl,nx,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2144,10 +2145,10 @@ c  center height equation
 
       subroutine solve
       implicit none
-c  solves the ste
-      integer :: idspl,nx,ady state plume conservation equations
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+c  solves the steady state plume conservation equations
+      integer :: idspl,nx,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2231,9 +2232,9 @@ c  solves the ste
 c
 c  solves the transient puff conservation equations
 c
-      integer :: idspl,nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      integer :: idspl,nx,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2322,9 +2323,9 @@ c
 c
 c  calculates the thermodynamic properties
 c
-      integer :: idspl,nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      integer :: idspl,nx,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2602,9 +2603,9 @@ c
 c
 c  calculates the steady state plume velocities and height
 c
-      integer :: idspl,nx,keval
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      integer :: idspl,nx,keval,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2826,11 +2827,12 @@ c  calculate crosswind velocities
 
       subroutine evalpf
       implicit none
-
+c
 c  calculates the transient puff velocities and height
-      integer :: idspl,nx,keval
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+c
+      integer :: idspl,nx,keval,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2987,9 +2989,9 @@ c  calculate crosswind velocities
 c
 c  calculates the entrainment rates and surface fluxes
 c
-      integer :: idspl,nx,keval
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      integer :: idspl,nx,keval,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -3196,9 +3198,40 @@ c  velocity and temperature fluxes
 
 
       subroutine store
-
+      implicit none
+c
 c  stores the output variables
+c
+      integer :: idspl,nx,keval,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      integer :: idpf,nxtr
 
+      ! Local variables
+      real(4) :: cpsl,cpwl
+      
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3352,8 +3385,40 @@ c     data toler,scf/3.5527136788005e-15,8.7777985100258e304/
 
 
       subroutine editin
-
+      implicit none
 c  writes the input values used in the problem
+      integer :: idspl,nx,keval,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      integer :: idpf,nxtr
+
+      ! Local variables
+      real(4) :: cpsl,cpwl
+      integer :: i
+      !real(4) :: u1,u12,u2,zcmx
+      !real(4),external :: uafn
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -3471,8 +3536,37 @@ c   additional parameters
 
 
       subroutine edits
-
+      implicit none
 c  writes the instantaneous spatially averaged cloud properties
+      integer :: idspl,nx,ncalc,nssm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      
+      ! Local variables
+      real(4) :: cpsl,cpwl
+      integer :: i
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
