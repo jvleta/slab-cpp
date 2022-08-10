@@ -139,8 +139,56 @@ c    functions used in main calculation
 c        uafn
 c
       subroutine state(input_file, output_file)
+      implicit none
+      integer :: idspl,nx,keval,ncalc,nssm,nzpm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,zp,
+     1           as,xffm,tav,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      integer :: idpf,nxtr,msfm,mnfm,mffm
 
-
+      ! Local variables
+      real(4) :: voln,y,tmdr,vold,tcmx,stby,sig2,sigm2,sig0
+      real(4) :: rlg,rm3,rit,rjt,rav,rav2,htpp,hdsig,hhf
+      real(4) :: gzi,gzip,facd,facn,erfy2,erfy1,ezi,erfx1
+      real(4) :: erfx2,erfcy1,erfcy2,erfcx1,erfcx2
+      real(4) :: epy1,epy2,epx1,epx2,cpwl,cvbrx,cc1
+      real(4) :: afata,ak,asig,cpsl,betac2,aal,al,al1
+      real(4) :: al2,al3,alfm,alm,am,amsfm,angam,anstp
+      real(4) :: astb,at0,atot,betm,betu,bmax,bmin,bsen
+      real(4) :: bsm,bxr,bxs0,bxtr,cfpr,ar,cmed0,cmpr
+      real(4) :: cupr,cvpk,dcm,dcm3,delu,dh,dln,ds,dt
+      real(4) :: dx,dxpr,dxrk,dxxi,en,en2,en3,eni
+      real(4) :: hprt,hqtcs,hs0,hsu,phm,phmi
+      real(4) :: rtcm,rwus,sft0,sgs,shz,srug
+      real(4) :: stabin,sum,ttst,txb,txt,u1,u2
+      real(4) :: ua3,uah,uahs,ufp,umgs,ustr2,va
+      real(4) :: vjp,xcc0,xir,xiz,xpr,xptr,z,zcr,z1,z2
+      real(4) :: fhh,fhz,fr2,gam,gmd,gu,h1,h2,h35,h67,he
+      real(4) :: hft,hh,hpr,hprb,hprd,hprm,pi,rab,ral
+      real(4) :: rbs,rhof2,rpwa,uaz2,uf,zcmx
+      real(4),external :: uafn
+      integer :: i,ijt,jtr,itr,j,k,ngam,ns,nstp,nxi
       character(len=*) input_file, output_file
 
 
@@ -3624,9 +3672,44 @@ c  writes the instantaneous spatially averaged cloud properties
 
 
       subroutine editcc
-
+      implicit none
 c  calculates and writes the time averaged volume concentration
+      integer :: idspl,nx,keval,ncalc,nssm,nzpm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      integer :: idpf,nxtr
 
+      ! Local variables
+      real(4) :: voln,y,tmdr,vold,tcmx,stby,sig2,sigm2,sig0
+      real(4) :: rlg,rm3,rit,rjt,rav,rav2,htpp,hdsig,hhf
+      real(4) :: gzi,gzip,facd,facn,erfy2,erfy1,ezi,erfx1
+      real(4) :: erfx2,erfcy1,erfcy2,erfcx1,erfcx2
+      real(4) :: epy1,epy2,epx1,epx2,cpwl,cvbrx,cc1
+      real(4) :: afata,ak,asig,cpsl,betac2
+      integer :: i,ii,in,j,k,nzpm1
+      
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
