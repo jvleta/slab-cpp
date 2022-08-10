@@ -1907,9 +1907,39 @@ c
 
 
       subroutine slope
-
+      implicit none
+c
 c  calculates the gradients used in the steady state plume conservation
 c   equations
+c
+      integer :: idspl,nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+
+      ! local variables
+      real(4) :: rqs,vhwb
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -1925,20 +1955,6 @@ c   equations
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
-
-      common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
-     1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
-     1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
-     1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
-
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
-
-      common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
 c  mass equation
@@ -1994,9 +2010,39 @@ c  released mass in cloud
 
 
       subroutine slopepf
-
+      implicit none
+c
 c  calculates the gradients used in the transient puff convervation
 c    equations
+c
+      integer :: idspl,nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+
+      ! local variables
+      real(4) :: atau,cpsl,cpwl,fgrv,rqs,vhwb
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -2097,8 +2143,36 @@ c  center height equation
 
 
       subroutine solve
+      implicit none
+c  solves the ste
+      integer :: idspl,nx,ady state plume conservation equations
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
-c  solves the steady state plume conservation equations
+      ! local variables
+      real(4) :: cpsl,cpwl,zcmx
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -2153,8 +2227,38 @@ c  solves the steady state plume conservation equations
 
 
       subroutine solvepf
-
+      implicit none
+c
 c  solves the transient puff conservation equations
+c
+      integer :: idspl,nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+
+      ! local variables
+      real(4) :: cpsl,cpwl,zcmx
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -2214,8 +2318,46 @@ c  solves the transient puff conservation equations
 
 
       subroutine thermo
-
+      implicit none
+c
 c  calculates the thermodynamic properties
+c
+      integer :: idspl,nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+
+      integer :: idpf,nxtr
+
+      ! local variables
+      real(4) :: ab2,ac,alfm,alfs,alfw,betm,cmda,cmeds,cmevt,cmwd,cmwds,
+     1           cmwvm,cmevm,cmevs,cmevsc,cmevspr,cmwvs,cmwvsc,cmwvspr,
+     1           cmwvt,cpsl,cpstr,cpwl,dhe0,dhet,dhw0,dhwt,dlti,dltm,
+     1           dtstr,etrn,ffpr,fft,fftt,gfnc,gfncp,ggt,ggtt,pe,pw,
+     1           tesrt,tstr,tstr1,tstra,twsrt,sfte,sqs
+      
+      integer :: i,icyc,ie,irep,iw
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -2456,8 +2598,43 @@ c  calculates the thermodynamic properties
 
 
       subroutine eval
-
+      implicit none
+c
 c  calculates the steady state plume velocities and height
+c
+      integer :: idspl,nx,keval
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+
+      integer :: idpf,nxtr
+
+      ! local variables
+      real(4) :: angl,cpsl,cpwl,ev,dluk,ew,gex,hhf,htph,rex,rex0,ru3,
+     1           u1,u12,u2,ut0,ut2,utg3,zcmx,sfue
+      real(4), external :: uafn
+      integer :: i
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -2648,8 +2825,40 @@ c  calculate crosswind velocities
 
 
       subroutine evalpf
+      implicit none
 
 c  calculates the transient puff velocities and height
+      integer :: idspl,nx,keval
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      integer :: idpf,nxtr
+
+      ! Local variables
+      real(4) :: cpsl,cpwl,eu,ev,ew,gex,gey,hhf,htph,rbxy,rex,rey,sfue
+      real(4) :: u1,u12,u2,zcmx
+      real(4),external :: uafn
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -2774,8 +2983,44 @@ c  calculate crosswind velocities
 
 
       subroutine entran
-
+      implicit none
+c
 c  calculates the entrainment rates and surface fluxes
+c
+      integer :: idspl,nx,keval
+      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse,nssm
+      real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
+      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
+      real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
+      real(4) :: f,dy,betacp,sigp,cvpm,zm
+      real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
+      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
+      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
+     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
+     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
+     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
+     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
+     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      integer :: idpf,nxtr
+
+      ! Local variables
+      real(4) :: al,alah,atot,cf,delu,cpsl,cpwl,fgr,fpr,fprb,frzr,galc
+      real(4) :: hbt,htst,phiit,phiitb,phmr,rab,rhoef,sig,stby,tg,uah
+      real(4) :: ubs,ubsi2,ugmhs2,uhs2,urho,ustr,ustr2,uts2,va,vax,vbar
+      real(4) :: vmgs,vmhs2,vrho,vxs,wmhs2,zrf,vjp,tgt,ubar,ugmgs,umgs
+      real(4) :: umhs2
+      real(4),external :: uafn
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
