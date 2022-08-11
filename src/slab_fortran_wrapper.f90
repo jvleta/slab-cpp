@@ -1,4 +1,5 @@
 module slab_fortran_wrapper
+use SlabClassic, only: state
 implicit none
 
 type SlabData
