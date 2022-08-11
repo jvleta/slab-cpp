@@ -1,3 +1,6 @@
+      module SlabClassic
+      implicit none
+      contains
 c
 c                 (C) Copyright 1990 the Regents of the
 c             University of California. All Rights Reserved.
@@ -139,7 +142,6 @@ c    functions used in main calculation
 c        uafn
 c
       subroutine state(input_file, output_file)
-      implicit none
       integer :: idspl,nx,keval,ncalc,nssm,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
@@ -187,7 +189,6 @@ c
       real(4) :: fhh,fhz,fr2,gam,gmd,gu,h1,h2,h35,h67,he
       real(4) :: hft,hh,hpr,hprb,hprd,hprm,pi,rab,ral
       real(4) :: rbs,rhof2,rpwa,uaz2,uf,zcmx
-      real(4),external :: uafn
       integer :: i,ijt,jtr,itr,j,k,ngam,ns,nstp,nxi
       character(len=*) input_file, output_file
 
@@ -1904,7 +1905,6 @@ c
 
 
       function uafn(z,z0,ala0,zl,hmx,zt,cu1,cu2)
-      implicit none
       real(4), intent(in) :: z, z0, ala0, zl, hmx, zt, cu1, cu2
       real(4) :: gus, phmi, uatm, xu, xu0
       real(4) :: uafn
@@ -1956,7 +1956,6 @@ c
 
 
       subroutine slope
-      implicit none
 c
 c  calculates the gradients used in the steady state plume conservation
 c   equations
@@ -2059,7 +2058,6 @@ c  released mass in cloud
 
 
       subroutine slopepf
-      implicit none
 c
 c  calculates the gradients used in the transient puff convervation
 c    equations
@@ -2192,7 +2190,6 @@ c  center height equation
 
 
       subroutine solve
-      implicit none
 c  solves the steady state plume conservation equations
       integer :: idspl,nx,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
@@ -2276,7 +2273,6 @@ c  solves the steady state plume conservation equations
 
 
       subroutine solvepf
-      implicit none
 c
 c  solves the transient puff conservation equations
 c
@@ -2367,7 +2363,6 @@ c
 
 
       subroutine thermo
-      implicit none
 c
 c  calculates the thermodynamic properties
 c
@@ -2647,7 +2642,6 @@ c
 
 
       subroutine eval
-      implicit none
 c
 c  calculates the steady state plume velocities and height
 c
@@ -2682,7 +2676,6 @@ c
       ! local variables
       real(4) :: angl,cpsl,cpwl,ev,dluk,ew,gex,hhf,htph,rex,rex0,ru3,
      1           u1,u12,u2,ut0,ut2,utg3,zcmx,sfue
-      real(4), external :: uafn
       integer :: i
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
@@ -2874,7 +2867,6 @@ c  calculate crosswind velocities
 
 
       subroutine evalpf
-      implicit none
 c
 c  calculates the transient puff velocities and height
 c
@@ -2908,7 +2900,6 @@ c
       ! Local variables
       real(4) :: cpsl,cpwl,eu,ev,ew,gex,gey,hhf,htph,rbxy,rex,rey,sfue
       real(4) :: u1,u12,u2,zcmx
-      real(4),external :: uafn
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -3033,7 +3024,6 @@ c  calculate crosswind velocities
 
 
       subroutine entran
-      implicit none
 c
 c  calculates the entrainment rates and surface fluxes
 c
@@ -3070,7 +3060,6 @@ c
       real(4) :: ubs,ubsi2,ugmhs2,uhs2,urho,ustr,ustr2,uts2,va,vax,vbar
       real(4) :: vmgs,vmhs2,vrho,vxs,wmhs2,zrf,vjp,tgt,ubar,ugmgs,umgs
       real(4) :: umhs2
-      real(4),external :: uafn
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -3246,7 +3235,6 @@ c  velocity and temperature fluxes
 
 
       subroutine store
-      implicit none
 c
 c  stores the output variables
 c
@@ -3344,7 +3332,6 @@ c
 
 
       subroutine editin
-      implicit none
 c  writes the input values used in the problem
       integer :: idspl,nx,keval,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
@@ -3377,7 +3364,7 @@ c  writes the input values used in the problem
       real(4) :: cpsl,cpwl
       integer :: i
       !real(4) :: u1,u12,u2,zcmx
-      !real(4),external :: uafn
+
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -3495,7 +3482,6 @@ c   additional parameters
 
 
       subroutine edits
-      implicit none
 c  writes the instantaneous spatially averaged cloud properties
       integer :: idspl,nx,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
@@ -3583,7 +3569,6 @@ c  writes the instantaneous spatially averaged cloud properties
 
 
       subroutine editcc
-      implicit none
 c  calculates and writes the time averaged volume concentration
       integer :: idspl,nx,keval,ncalc,nssm,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
@@ -3919,3 +3904,4 @@ c
 c        This work was produced under the sponsorship of
 c         the U.S. Department of Energy. The Government
 c                retains certain rights therein.
+      end module
