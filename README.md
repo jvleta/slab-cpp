@@ -2,6 +2,9 @@
 
 [![Build](https://github.com/jvleta/slab-cpp/actions/workflows/cmake.yml/badge.svg)](https://github.com/jvleta/slab-cpp/actions/workflows/cmake.yml)
 
+This project is my attempt at porting the original Slab solver from FORTRAN-77 to C++.
+
+
 From original README of Slab project:
 
 The SLAB model has been developed to simulate the atmospheric
