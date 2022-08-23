@@ -14,3 +14,5 @@ denser-than-air releases, it will also simulate cloud dispersion
 of neutrally-buoyant releases.  Consequently, a typical SLAB
 simulation covers both the near-field dense gas phase and the far-
 field passive gas phase.
+
+See [epa.gov site](https://www.epa.gov/scram/air-quality-dispersion-modeling-alternative-models) site for additional detail.
