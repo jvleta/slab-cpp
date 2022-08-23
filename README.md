@@ -1,6 +1,6 @@
-# LASTRA (slab)
+# slab-cpp
 
-From original README:
+From original README of Slab project:
 
 The SLAB model has been developed to simulate the atmospheric
 dispersion of denser-than-air releases over flat terrain.  The
