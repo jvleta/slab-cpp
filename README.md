@@ -1,5 +1,7 @@
 # slab-cpp
 
+[![Build](https://github.com/jvleta/slab-cpp/actions/workflows/cmake.yml/badge.svg)](https://github.com/jvleta/slab-cpp/actions/workflows/cmake.yml)
+
 From original README of Slab project:
 
 The SLAB model has been developed to simulate the atmospheric
