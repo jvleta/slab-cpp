@@ -1,2 +1,2 @@
 enable_language(Fortran)
-add_executable(slab-legacy SLAB.FOR)
+add_executable(Slab SLAB.FOR)
