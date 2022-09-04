@@ -7,8 +7,8 @@
 #include "gtest/gtest.h"
 #include "ApprovalTests/Approvals.h"
 
-#include "../src/slab_io.h"
-#include "../src/slab_c_wrapper.h"
+#include "../src/slab-cpp/slab_io.h"
+#include "../src/slab-cpp/slab_c_wrapper.h"
 
 // using namespace ApprovalTests;
 
