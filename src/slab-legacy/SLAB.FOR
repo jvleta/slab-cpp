@@ -175,7 +175,7 @@ c  constants for calculating stability regions
       dimension sum(15),dxxi(3),dxrk(4)
 
       open(2,file='input',status='old')
-      open(3,file='predict',status='new')
+      open(3,file='predict')
 
 
 
