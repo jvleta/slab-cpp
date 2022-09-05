@@ -22,7 +22,7 @@ enable_language(Fortran)
 target_link_libraries(slab_approval_tests
   ApprovalTests::ApprovalTests
   GTest::GTest
-  slabwrapper
+  SlabWrapper
   )
   
 add_test(slab_approval_tests slab_approval_tests)
