@@ -64,6 +64,8 @@ void dostuff(void* slabdata_c_ptr);
 
 void run_test_case(int *test_number);
 
+void state();
+
 #ifdef __cplusplus
 }
 #endif

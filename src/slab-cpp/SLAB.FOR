@@ -141,7 +141,7 @@ c
 c    functions used in main calculation
 c        uafn
 c
-      subroutine state(input_file, output_file)
+      subroutine state()
       integer :: idspl,nx,keval,ncalc,nssm,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
@@ -190,8 +190,6 @@ c
       real(4) :: hft,hh,hpr,hprb,hprd,hprm,pi,rab,ral
       real(4) :: rbs,rhof2,rpwa,uaz2,uf,zcmx
       integer :: i,ijt,jtr,itr,j,k,ngam,ns,nstp,nxi
-      character(len=*) input_file, output_file
-
 
       common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
@@ -226,8 +224,8 @@ c  constants for calculating stability regions
 
       dimension sum(15),dxxi(3),dxrk(4)
 
-      open(2,file=input_file)
-      open(3,file=output_file)
+      open(2,file='input')
+      open(3,file='predict')
 
 
 
