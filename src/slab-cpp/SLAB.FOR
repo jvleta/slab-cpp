@@ -144,7 +144,7 @@ c
       subroutine state()
       use slab_fortran_wrapper, only: SlabData
       type(SlabData) :: self
-      integer :: nx,keval,ncalc,nssm,nzpm
+      integer :: nx,keval,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -193,8 +193,8 @@ c
       real(4) :: rbs,rhof2,rpwa,uaz2,uf,zcmx
       integer :: i,ijt,jtr,itr,j,k,ngam,ns,nstp,nxi
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -248,7 +248,7 @@ c  ============
 c   read input
 c  ============
 
-      read (2,107) self%spill_type,ncalc
+      read (2,107) self%spill_type,self%substep_multiplier
   107 format (i5)
       read (2,108) wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,spc
       read (2,108) ts,qs,as,tsd,qtis,hs
@@ -326,7 +326,9 @@ c  write input
 c =============
 
 
-      write (3,114) self%spill_type,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,
+      write (3,114) self%spill_type,self%substep_multiplier,
+     1 wms,cps,tbp,cmed0,dhe,
+     1 cpsl,
      1 rhosl,
      1 spb,
      1 spc,ts,qs,as,tsd,qtis,hs,tav,xffm,(i,zp(i),i=1,4)
@@ -397,7 +399,7 @@ c  atmospheric and physical constants
 
 c  number of integration steps
 
-      nssm = ncalc + ncalc + ncalc
+      self%num_calculation_substeps = 3 * self%substep_multiplier
       msfm = 11
       mnfm = 50
       mffm = 61
@@ -811,7 +813,7 @@ c ============================
 
 
   200 continue
-      anstp = nssm*(msfm-1)
+      anstp = self%num_calculation_substeps*(msfm-1)
 
   250 nxi = 2
       dbt = 0.
@@ -946,7 +948,7 @@ c ===============================================
 
 
       do 355 nx=nxi,msfm
-      do 345 ns=1,nssm
+      do 345 ns=1,self%num_calculation_substeps
 
       do i=1,11
         sum(i) = 0.
@@ -1404,7 +1406,7 @@ c  go to nearfield region calculation
 
          if (xffm .lt. (2.*xp(msfm))) xffm = 2.*xp(msfm)
          ngam = log10((xffm/xp(msfm))-1.) + 1.
-         nstp = nssm*mnfm
+         nstp = self%num_calculation_substeps*mnfm
          anstp = nstp
          gam = 10.**(ngam/anstp)
          dx = (gam-1.)*(xffm-xp(msfm))/((gam**nstp)-1.)
@@ -1437,7 +1439,7 @@ c ================
       if(xffm.lt.(2.*xp(msfm))) xffm = 2.*xp(msfm)
 
       angam = log10((xffm/xp(msfm))-1.) + 1.
-      nstp = nssm*mnfm
+      nstp = self%num_calculation_substeps*mnfm
       anstp = nstp
       gam = 10.**(angam/anstp)
       dx = (gam-1.) * (xffm-xp(msfm))/((gam**nstp)-1.)
@@ -1448,7 +1450,7 @@ c ===============================================
 
       do 675 nx=nxi,mffm
 
-      do 660 ns = 1,nssm
+      do 660 ns = 1,self%num_calculation_substeps
 
       do i=1,11
         sum(i) = 0.
@@ -1598,7 +1600,7 @@ c  initialization
 c ================
 
   700 nxi = 2
-      nstp = nssm*mffm
+      nstp = self%num_calculation_substeps*mffm
       anstp = nstp
       ttst = .1*(anstp-1.)
       if(tffm .gt. ttst) then
@@ -1747,7 +1749,7 @@ c ========================================
 
   730 do 775 nx=nxi,mffm
 
-      do 765 ns=1,nssm
+      do 765 ns=1,self%num_calculation_substeps
       if (tim .lt. tsd) then
          wss = ws
          xstr = h/cf0
@@ -1964,7 +1966,7 @@ c
 c  calculates the gradients used in the steady state plume conservation
 c   equations
 c
-      integer :: nx,ncalc,nssm
+      integer :: nx
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -1993,8 +1995,8 @@ c
       ! local variables
       real(4) :: rqs,vhwb
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2068,7 +2070,7 @@ c
 c  calculates the gradients used in the transient puff convervation
 c    equations
 c
-      integer :: nx,ncalc,nssm
+      integer :: nx
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2097,8 +2099,8 @@ c
       ! local variables
       real(4) :: atau,cpsl,cpwl,fgrv,rqs,vhwb
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2199,7 +2201,7 @@ c  center height equation
       use slab_fortran_wrapper, only: SlabData
       type(SlabData) :: self
 c  solves the steady state plume conservation equations
-      integer :: nx,ncalc,nssm
+      integer :: nx
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2228,8 +2230,8 @@ c  solves the steady state plume conservation equations
       ! local variables
       real(4) :: cpsl,cpwl,zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2286,7 +2288,7 @@ c  solves the steady state plume conservation equations
 c
 c  solves the transient puff conservation equations
 c
-      integer :: nx,ncalc,nssm
+      integer :: nx
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2315,8 +2317,8 @@ c
       ! local variables
       real(4) :: cpsl,cpwl,zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2378,7 +2380,7 @@ c
 c
 c  calculates the thermodynamic properties
 c
-      integer :: nx,ncalc,nssm
+      integer :: nx
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2415,8 +2417,8 @@ c
       
       integer :: i,icyc,ie,irep,iw
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2659,7 +2661,7 @@ c
 c
 c  calculates the steady state plume velocities and height
 c
-      integer :: nx,keval,ncalc,nssm
+      integer :: nx,keval
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2692,8 +2694,8 @@ c
      1           u1,u12,u2,ut0,ut2,utg3,zcmx,sfue
       integer :: i
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -2886,7 +2888,7 @@ c  calculate crosswind velocities
 c
 c  calculates the transient puff velocities and height
 c
-      integer :: nx,keval,ncalc,nssm
+      integer :: nx,keval
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2917,8 +2919,8 @@ c
       real(4) :: cpsl,cpwl,eu,ev,ew,gex,gey,hhf,htph,rbxy,rex,rey,sfue
       real(4) :: u1,u12,u2,zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -3045,7 +3047,7 @@ c  calculate crosswind velocities
 c
 c  calculates the entrainment rates and surface fluxes
 c
-      integer :: nx,keval,ncalc,nssm
+      integer :: nx,keval
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3079,8 +3081,8 @@ c
       real(4) :: vmgs,vmhs2,vrho,vxs,wmhs2,zrf,vjp,tgt,ubar,ugmgs,umgs
       real(4) :: umhs2
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -3258,7 +3260,7 @@ c  velocity and temperature fluxes
 c
 c  stores the output variables
 c
-      integer :: nx,keval,ncalc,nssm
+      integer :: nx,keval
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3288,8 +3290,8 @@ c
       ! Local variables
       real(4) :: cpsl,cpwl
       
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -3355,7 +3357,7 @@ c
       use slab_fortran_wrapper, only: SlabData
       type(SlabData) :: self
 c  writes the input values used in the problem
-      integer :: nx,keval,ncalc,nssm
+      integer :: nx,keval
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3388,8 +3390,8 @@ c  writes the input values used in the problem
       !real(4) :: u1,u12,u2,zcmx
 
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -3487,7 +3489,8 @@ c   ambient meteorological variables
 
 c   additional parameters
 
-      write (3,105) ncalc,nssm,grav,rr,xk
+      write (3,105) self%substep_multiplier,
+     1 self%num_calculation_substeps,grav,rr,xk
 
   105 format(//'additional parameters'//,1p,
      1 ' sub-step multiplier                    ',10x,'- ncalc =',i12/
@@ -3507,7 +3510,7 @@ c   additional parameters
       use slab_fortran_wrapper, only: SlabData
       type(SlabData) :: self
 c  writes the instantaneous spatially averaged cloud properties
-      integer :: nx,ncalc,nssm
+      integer :: nx
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3537,8 +3540,8 @@ c  writes the instantaneous spatially averaged cloud properties
       real(4) :: cpsl,cpwl
       integer :: i
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
@@ -3596,7 +3599,7 @@ c  writes the instantaneous spatially averaged cloud properties
       use slab_fortran_wrapper, only: SlabData
       type(SlabData) :: self
 c  calculates and writes the time averaged volume concentration
-      integer :: nx,keval,ncalc,nssm,nzpm
+      integer :: nx,keval,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3632,8 +3635,8 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: afata,ak,asig,cpsl,betac2
       integer :: i,ii,in,j,k,nzpm1
       
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
