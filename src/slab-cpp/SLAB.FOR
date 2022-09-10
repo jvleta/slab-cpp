@@ -142,7 +142,9 @@ c    functions used in main calculation
 c        uafn
 c
       subroutine state()
-      integer :: idspl,nx,keval,ncalc,nssm,nzpm
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
+      integer :: nx,keval,ncalc,nssm,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -200,7 +202,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -246,7 +248,7 @@ c  ============
 c   read input
 c  ============
 
-      read (2,107) idspl,ncalc
+      read (2,107) self%spill_type,ncalc
   107 format (i5)
       read (2,108) wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,spc
       read (2,108) ts,qs,as,tsd,qtis,hs
@@ -324,7 +326,9 @@ c  write input
 c =============
 
 
-      write (3,114) idspl,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,
+      write (3,114) self%spill_type,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,
+     1 rhosl,
+     1 spb,
      1 spc,ts,qs,as,tsd,qtis,hs,tav,xffm,(i,zp(i),i=1,4)
 
   114 format (///'problem input'//'  idspl =',5x,i5/'  ncalc =',5x,i5/
@@ -544,7 +548,7 @@ c ====================================
       idpf = 0
       tgon = 1.
 
-      if(idspl .eq. 1) then
+      if(self%spill_type .eq. 1) then
 c ==========================
 c  evaporating pool release
 c ==========================
@@ -559,10 +563,10 @@ c ==========================
       xcc0 = 0.
       tim = tsd
       cmed = 0.
-      call editin
+      call editin(self)
       go to 200
 
-      else if (idspl .eq. 2) then
+      else if (self%spill_type .eq. 2) then
 c ========================
 c  horizontal jet release
 c ========================
@@ -614,10 +618,10 @@ c ========================
       bxs0 = 0.
       tim = tsd
 
-      call editin
+      call editin(self)
       go to 400
 
-      else if (idspl .eq. 3) then
+      else if (self%spill_type .eq. 3) then
 
 c ======================
 c  vertical jet release
@@ -639,7 +643,7 @@ c ======================
       bxs0 = 0.
       tim = tsd
 
-      call editin
+      call editin(self)
 
 c  plume rise calculation
       hsu = hs
@@ -679,7 +683,7 @@ c  dense gas jet plume rise
          cp0 = cmev0*cps + cmed*cpsl
          xn = 1.+xpr
          sft = 0.
-         call thermo
+         call thermo(self)
          ijt = 2
         else
 
@@ -751,7 +755,7 @@ c  go to plume rise interpolation
          go to 500
       endif
 
-      else if (idspl .eq. 4) then
+      else if (self%spill_type .eq. 4) then
 c ==========================================================
 c  instantaneous of short duration evaporating pool release
 c ==========================================================
@@ -786,7 +790,7 @@ c ==========================================================
       idpf = 2
       tim = 0.
       nxtr = 1
-      call editin
+      call editin(self)
       go to 700
 
       else
@@ -960,7 +964,7 @@ c ===============================================
 
       keval=k
 
-      call slope
+      call slope(self)
 
       do 320 j=1,11
 
@@ -976,13 +980,13 @@ c ===============================================
 
   320 continue
 
-      call solve
+      call solve(self)
 
-      call thermo
+      call thermo(self)
 
-      call eval
+      call eval(self)
 
-      call entran
+      call entran(self)
 
       sum(2) = sum(2) + dbbx
       dbt = dbt + dbbx
@@ -1017,7 +1021,7 @@ c ===============================================
 
   345 continue
 
-      call store
+      call store(self)
       xstr = h/cf0
 
   355 continue
@@ -1064,7 +1068,7 @@ c  return for source region recalculation
       go to 250
 
   390 if (qint .gt. hqtcs) then
-          idspl = 4
+          self%spill_type = 4
 
 c  switch to short duration release
           go to 150
@@ -1461,7 +1465,7 @@ c ===============================================
 
       do 655 k=1,4
 
-      call slope
+      call slope(self)
 
       do 650 j=1,11
 
@@ -1478,10 +1482,10 @@ c ===============================================
 
   650 continue
 
-      call solve
-      call thermo
-      call eval
-      call entran
+      call solve(self)
+      call thermo(self)
+      call eval(self)
+      call entran(self)
 
   655 continue
 
@@ -1530,7 +1534,7 @@ c ===============================================
       xccp(nx) = x
       tccp(nx) = (qint+qint)/qs
 
-      call store
+      call store(self)
 
       if(qint .lt. hqtcs) then
           go to 675
@@ -1765,7 +1769,7 @@ c ========================================
       dxrk(4) = dt/6.
 
       do 745 k=1,4
-      call slopepf
+      call slopepf(self)
 
       do 740 j=1,15
 
@@ -1780,10 +1784,10 @@ c ========================================
 
   740 continue
 
-      call solvepf
-      call thermo
-      call evalpf
-      call entran
+      call solvepf(self)
+      call thermo(self)
+      call evalpf(self)
+      call entran(self)
 
   745 continue
 
@@ -1825,7 +1829,7 @@ c ========================================
       xccp(nx) = x
       tccp(nx) = tim
 
-      call store
+      call store(self)
 
   775 continue
 
@@ -1862,7 +1866,7 @@ c   steady state calc of timp
   925    continue
       endif
 
-      if (idspl .eq. 1) then
+      if (self%spill_type .eq. 1) then
          do 930 i=1,5
          timp(i) = timp(12-i)
   930    continue
@@ -1870,14 +1874,14 @@ c   steady state calc of timp
 
 c  write instantaneous spatially averaged cloud parameters
 
-      call edits
+      call edits(self)
 
 c  calculate and write time averaged volume concentration
 c   concentration contour parameters
 c   concentration in the zp(i) plane
 c   maximum concentration along centerline
 
-      call editcc
+      call editcc(self)
 
       go to 110
       end
@@ -1953,12 +1957,14 @@ c
 
 
 
-      subroutine slope
+      subroutine slope(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the gradients used in the steady state plume conservation
 c   equations
 c
-      integer :: idspl,nx,ncalc,nssm
+      integer :: nx,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -1996,7 +2002,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -2055,12 +2061,14 @@ c  released mass in cloud
 
 
 
-      subroutine slopepf
+      subroutine slopepf(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the gradients used in the transient puff convervation
 c    equations
 c
-      integer :: idspl,nx,ncalc,nssm
+      integer :: nx,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2098,7 +2106,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -2187,9 +2195,11 @@ c  center height equation
 
 
 
-      subroutine solve
+      subroutine solve(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c  solves the steady state plume conservation equations
-      integer :: idspl,nx,ncalc,nssm
+      integer :: nx,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2227,7 +2237,7 @@ c  solves the steady state plume conservation equations
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -2270,11 +2280,13 @@ c  solves the steady state plume conservation equations
 
 
 
-      subroutine solvepf
+      subroutine solvepf(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c
 c  solves the transient puff conservation equations
 c
-      integer :: idspl,nx,ncalc,nssm
+      integer :: nx,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2312,7 +2324,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -2360,11 +2372,13 @@ c
 
 
 
-      subroutine thermo
+      subroutine thermo(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the thermodynamic properties
 c
-      integer :: idspl,nx,ncalc,nssm
+      integer :: nx,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2410,7 +2424,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -2639,11 +2653,13 @@ c
 
 
 
-      subroutine eval
+      subroutine eval(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the steady state plume velocities and height
 c
-      integer :: idspl,nx,keval,ncalc,nssm
+      integer :: nx,keval,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2685,7 +2701,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -2864,11 +2880,13 @@ c  calculate crosswind velocities
 
 
 
-      subroutine evalpf
+      subroutine evalpf(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the transient puff velocities and height
 c
-      integer :: idspl,nx,keval,ncalc,nssm
+      integer :: nx,keval,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -2908,7 +2926,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -3021,11 +3039,13 @@ c  calculate crosswind velocities
 
 
 
-      subroutine entran
+      subroutine entran(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the entrainment rates and surface fluxes
 c
-      integer :: idspl,nx,keval,ncalc,nssm
+      integer :: nx,keval,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3068,7 +3088,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -3110,12 +3130,12 @@ c  vertical entrainment
          ubsi2 = umgs*umgs + vmgs*vmgs + cws*wss*uab
       endif
       ubs2 = ubsi2
-      if (idspl .eq. 1)  then
+      if (self%spill_type .eq. 1)  then
          if (xn .gt. bse)  then
          ubs2 = ubsi2 + (ubs20-ubsi2)*exp((bse-xn)/xstr)
          endif
       endif
-      if (idspl .eq. 4)  then
+      if (self%spill_type .eq. 4)  then
          if ((qs*timn) .gt. qtcs)  then
          ubs2 = ubsi2 + (ubs20-ubsi2)*exp((tsd-timn)*u/xstr)
          endif
@@ -3232,11 +3252,13 @@ c  velocity and temperature fluxes
 
 
 
-      subroutine store
+      subroutine store(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c
 c  stores the output variables
 c
-      integer :: idspl,nx,keval,ncalc,nssm
+      integer :: nx,keval,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3275,7 +3297,7 @@ c
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -3329,9 +3351,11 @@ c
 
 
 
-      subroutine editin
+      subroutine editin(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c  writes the input values used in the problem
-      integer :: idspl,nx,keval,ncalc,nssm
+      integer :: nx,keval,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3373,7 +3397,7 @@ c  writes the input values used in the problem
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -3414,7 +3438,7 @@ c   release gas properties
 
 c   spill characteristics
 
-      write (3,102) idspl,qs,tsd,qtcs,qtis,as,ws,bs,hs,us
+      write (3,102) self%spill_type,qs,tsd,qtcs,qtis,as,ws,bs,hs,us
 
   102 format (//'spill characteristics'//,1p,
      1 ' spill type                              ',10x,'- idspl=',i12/
@@ -3479,9 +3503,11 @@ c   additional parameters
 
 
 
-      subroutine edits
+      subroutine edits(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c  writes the instantaneous spatially averaged cloud properties
-      integer :: idspl,nx,ncalc,nssm
+      integer :: nx,ncalc,nssm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3521,7 +3547,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
 
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -3566,9 +3592,11 @@ c  writes the instantaneous spatially averaged cloud properties
 
 
 
-      subroutine editcc
+      subroutine editcc(self)
+      use slab_fortran_wrapper, only: SlabData
+      type(SlabData) :: self
 c  calculates and writes the time averaged volume concentration
-      integer :: idspl,nx,keval,ncalc,nssm,nzpm
+      integer :: nx,keval,ncalc,nssm,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
@@ -3613,7 +3641,7 @@ c  calculates and writes the time averaged volume concentration
 
       common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
@@ -3673,7 +3701,7 @@ c   betacp(i) = effective beta with meander
       rav2 = rav*rav
       sig0 = asig*(sqrt(1.+sigb*(xp(i)-xp(1)))-1.)
       rjt = 1.
-      if (idspl .eq. 2)  then
+      if (self%spill_type .eq. 2)  then
          rm3 = ((rhoa*uap(i)*(1.-cmp(i)))/(rhos*us*cmp(i)))
      1         **(1./3.)
          rlg = log((1.-rm3+(rm3*rm3))/((1.+rm3)*(1.+rm3)))
@@ -3797,7 +3825,7 @@ c   betacp(i) = effective beta with meander
 
 c  write the concentration contour parameters
 
-      if (idspl .eq. 4) then
+      if (self%spill_type .eq. 4) then
 
       write (3,105) tav
   105 format ('1'//'time averaged (tav =',f6.0,' s) volume',
