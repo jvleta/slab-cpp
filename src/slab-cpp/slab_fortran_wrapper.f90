@@ -53,9 +53,9 @@ type SlabData
   ! Additional Parameters
   integer :: substep_multiplier
   integer :: num_calculation_substeps
-  ! real(4) :: gravitational_constant
-  ! real(4) :: gas_constant
-  ! real(4) :: von_karman_constant
+  real(4) :: gravitational_constant
+  real(4) :: gas_constant
+  real(4) :: von_karman_constant
 end type
 contains
   
