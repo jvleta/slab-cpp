@@ -12,7 +12,7 @@ type SlabData
   ! real(4) :: liquid_mass_fraction
   ! real(4) :: liquid_heat_capacity
   ! real(4) :: heat_of_vaporization
-  ! real(4) :: source_liquid_density
+  real(4) :: source_liquid_density
   ! real(4) :: saturation_pressure_constant_a
   ! real(4) :: saturation_pressure_constant_b
   ! real(4) :: saturation_pressure_constant_c
