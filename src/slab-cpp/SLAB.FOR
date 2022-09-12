@@ -180,7 +180,7 @@ c
       real(4) :: afata,ak,asig,cpsl,betac2,aal,al,al1
       real(4) :: al2,al3,alfm,alm,am,amsfm,angam,anstp
       real(4) :: astb,at0,atot,betm,betu,bmax,bmin,bsen
-      real(4) :: bsm,bxr,bxs0,bxtr,cfpr,ar,cmed0,cmpr
+      real(4) :: bsm,bxr,bxs0,bxtr,cfpr,ar,cmpr
       real(4) :: cupr,cvpk,dcm,dcm3,delu,dh,dln,ds,dt
       real(4) :: dx,dxpr,dxrk,dxxi,en,en2,en3,eni
       real(4) :: hprt,hqtcs,hs0,hsu,phm,phmi
@@ -253,7 +253,7 @@ c  ============
       read (2,108) self%source_gas_molecular_weight,
      1             self%vapor_heat_capacity,
      1             self%boiling_point_temperature,
-     1             cmed0,dhe,cpsl,
+     1             self%liquid_mass_fraction,dhe,cpsl,
      1             self%source_liquid_density,
      1             spb,
      1             spc
@@ -336,7 +336,7 @@ c =============
       write (3,114) self%spill_type,self%substep_multiplier,
      1 self%source_gas_molecular_weight,
      1 self%vapor_heat_capacity,
-     1 self%source_gas_temperature,cmed0,dhe,
+     1 self%source_gas_temperature,self%liquid_mass_fraction,dhe,
      1 cpsl,
      1 self%source_liquid_density,
      1 spb,
@@ -384,12 +384,12 @@ c  boiling point temperature check
         self%source_gas_temperature = self%boiling_point_temperature
       end if
 
-      if (cmed0 .gt. 0.) then
+      if (self%liquid_mass_fraction .gt. 0.) then
         self%source_gas_temperature=self%boiling_point_temperature
       end if
 c  initial droplet concentration
 
-      cmed = cmed0
+      cmed = self%liquid_mass_fraction
 
 c  atmospheric and physical constants
 
