@@ -142,13 +142,13 @@ c    functions used in main calculation
 c        uafn
 c
       subroutine state()
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
       integer :: nx,keval,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -196,7 +196,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -468,7 +468,7 @@ c   ====================
 
 c  calculate ambient meteorological values
 
-      rhoa = wmae*pa/(self%gas_constant*ta)
+      self%ambient_air_density = wmae*pa/(self%gas_constant*ta)
 
       tau0 = 10.
       at0 = 0.
@@ -554,7 +554,7 @@ c ====================================
 c ====================================
 
 
-  150 rhos = self%source_gas_molecular_weight
+  150 self%source_gas_density = self%source_gas_molecular_weight
      1 *pa/(self%gas_constant*self%source_gas_temperature)
       qtcs = qs*tsd
       hqtcs = .5*qtcs
@@ -566,7 +566,7 @@ c ====================================
 c ==========================
 c  evaporating pool release
 c ==========================
-      ws = qs/(rhos*as)
+      ws = qs/(self%source_gas_density*as)
       bse = bs
       qtis = 0.
       hs = 0.
@@ -587,8 +587,8 @@ c ========================
       t0 = self%source_gas_temperature
       cmev0 = 1.-cmed
       alfm = (wmae/self%source_gas_molecular_weight)*cmev0
-      betm = (rhoa/self%source_liquid_density)*cmed
-      rho = rhoa*ta/(alfm*t0+betm*ta)
+      betm = (self%ambient_air_density/self%source_liquid_density)*cmed
+      rho = self%ambient_air_density*ta/(alfm*t0+betm*ta)
 
       us = qs/(rho*as)
       alfg = 0.
@@ -645,8 +645,8 @@ c ======================
       t0 = self%source_gas_temperature
       cmev0 = 1.-cmed
       alfm = (wmae/self%source_gas_molecular_weight)*cmev0
-      betm = (rhoa/self%source_liquid_density)*cmed
-      rho = rhoa*ta/(alfm*t0+betm*ta)
+      betm = (self%ambient_air_density/self%source_liquid_density)*cmed
+      rho = self%ambient_air_density*ta/(alfm*t0+betm*ta)
       rho0 = rho
 
       ws = qs/(rho*as)
@@ -673,13 +673,13 @@ c  plume rise calculation
   155 continue
 
 c  dense gas, momentum, or buoyant jet
-      if (rho .gt. rhoa) then
+      if (rho .gt. self%ambient_air_density) then
 
 c  dense gas jet plume rise
          ds = 4.0*bs/srpi
          fr2 = ws*ws/(self%gravitational_constant
-     1 *ds*(rho-rhoa)/rhoa)
-         sgs = rho/rhoa
+     1 *ds*(rho-self%ambient_air_density)/self%ambient_air_density)
+         sgs = rho/self%ambient_air_density
          rwus = ws/uahs
          hprd = 1.32*ds*((rwus*sgs*fr2)**.3333)
          hpr = hprm*hprd/sqrt(hprd*hprd+hprm*hprm)
@@ -706,8 +706,8 @@ c  dense gas jet plume rise
 
 c  momentum or buoyant jet plume rise
          hprb = 1.7254*self%gravitational_constant
-     1     *(rhoa-rho)*ws*bs*bs/
-     1     (rhoa*uahs*uastr*uastr)
+     1     *(self%ambient_air_density-rho)*ws*bs*bs/
+     1     (self%ambient_air_density*uahs*uastr*uastr)
          h35 = hprb**.6
          do 160 i=1,3
          hprt = h35*((hs+hprb)**.4)
@@ -718,8 +718,8 @@ c  momentum or buoyant jet plume rise
          if (hs .gt. (hmx-bs))  hs = hmx-bs
          us = (uastr/xk)*uafn(hs,z0,ala0,zl,hmx,zt,cu1,cu2)
          ws = 0.
-         rho = rhoa
-         rhos = rhoa
+         rho = self%ambient_air_density
+         self%source_gas_density = self%ambient_air_density
          as = qs/(rho*us)
          alfg = 0.
          bb = .5*sqrt(as)
@@ -779,7 +779,7 @@ c  go to plume rise interpolation
 c ==========================================================
 c  instantaneous of short duration evaporating pool release
 c ==========================================================
-      ws = qs/(rhos*as)
+      ws = qs/(self%source_gas_density*as)
       bse = bs
 
       t0 = self%source_gas_temperature
@@ -797,8 +797,8 @@ c ==========================================================
       cmevp(1) = cmev0
       cp0 = cmev0*self%vapor_heat_capacity + cmed*cpsl
       alfm = (wmae/self%source_gas_molecular_weight)*cmev0
-      betm = (rhoa/self%source_liquid_density)*cmed
-      rho = rhoa*ta/(alfm*t0+betm*ta)
+      betm = (self%ambient_air_density/self%source_liquid_density)*cmed
+      rho = self%ambient_air_density*ta/(alfm*t0+betm*ta)
       rho0 = rho
       rhop(1) = rho
 
@@ -877,7 +877,7 @@ c ============================
 
       betap(1) = sqrt(bb*bb-b*b)/sr3
 
-      rho = rhoa
+      rho = self%ambient_air_density
       rhop(1) = rho
       rho0 = rho
 
@@ -1029,7 +1029,8 @@ c ===============================================
       u0 = u
       uab0 = uab
       ubs20 = ubs2
-      srug = .5*alfg*self%gravitational_constant*(rho-rhoa)*bb*h*h
+      srug = .5*alfg*self%gravitational_constant
+     1     *(rho-self%ambient_air_density)*bb*h*h
       sru0 = r*u - r*(1.-cm)*uab + srug
       qint0 = qint
 
@@ -1070,7 +1071,7 @@ c  recalculate initial source size
       ua3 = uab*uab*uab
 
       bsen = 3.375 * alfg*self%gravitational_constant 
-     1 * (rhop(msfm) - rhoa) * r/
+     1 * (rhop(msfm) - self%ambient_air_density) * r/
      1 (ua3*rhof2*dcm3) - bbp(msfm) + bbp(1)
       bsen = .5*(bse+bsen)
       if(bsen.lt.bmax) goto 378
@@ -1187,10 +1188,10 @@ c ======================================
 
       r0 = rho*u*bb*h
       srug = .5*alfg*self%gravitational_constant
-     1 *(rho-rhoa)*bb*h*h
+     1 *(rho-self%ambient_air_density)*bb*h*h
       sru0 = r0*u + srug
 
-      delu = (rhoa/rho)*abs(uab-us)
+      delu = (self%ambient_air_density/rho)*abs(uab-us)
       if (htp .gt. h)  then
          ubs20 = uastr2
          ustr2 = uastr2 + cf1*delu*delu
@@ -1367,9 +1368,10 @@ c ========================================
       ft = 0.
 
       r0 = r
-      srug = .5*alfg*self%gravitational_constant*(rho-rhoa)*bb*h*h
+      srug = .5*alfg*self%gravitational_constant
+     1     * (rho-self%ambient_air_density)*bb*h*h
       sru0 = r*(u-(1.-cm)*uab) + srug
-      delu = (rhoa/rho)*abs(uab-u)
+      delu = (self%ambient_air_density/rho)*abs(uab-u)
       if (htp .gt. h) then
          ubs20 = uastr2
          ustr2 = uastr2 + cf1*delu*delu
@@ -1532,10 +1534,10 @@ c ===============================================
          alfg = 0.
          srug = 0.
         else
-         if (rho .gt. rhoa) then
+         if (rho .gt. self%ambient_air_density) then
             alfg = .25
             srug = .5*alfg*self%gravitational_constant
-     1 *(rho-rhoa)*bb*h*h
+     1 *(rho-self%ambient_air_density)*bb*h*h
            else
             alfg = 0.
             srug = 0.
@@ -1739,7 +1741,7 @@ c ================
       atot = afa*stby
       rab = .5*sigb/atot
       va = atot*uab/(1.+rab*bb/sr3)
-      delu = (uab-u)*(rhoa/rho)
+      delu = (uab-u)*(self%ambient_air_density/rho)
       vjp = aa*xk*delu
       v = sqrt(va*va+cf1*vjp*vjp)
       vp(1) = v
@@ -1982,7 +1984,7 @@ c
 
 
       subroutine slope(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c
 c  calculates the gradients used in the steady state plume conservation
@@ -1992,7 +1994,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2020,7 +2022,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2042,11 +2044,11 @@ c  mass equation
       endif
 
       vhwb = sr3*(v*h + w*bb)
-      f(1) = rhoa*vhwb + rqs
+      f(1) = self%ambient_air_density*vhwb + rqs
 
 c  half-width equation
 
-      f(2) = (sr3*(rhoa/rho)*v + vg)/u
+      f(2) = (sr3*(self%ambient_air_density/rho)*v + vg)/u
 
 c  b parameter equation
 
@@ -2054,7 +2056,8 @@ c  b parameter equation
 
 c  crosswind velocity equation
 
-      f(4) = alfgv*self%gravitational_constant*(rho-rhoa)*h*h
+      f(4) = alfgv*self%gravitational_constant
+     1     *(rho-self%ambient_air_density)*h*h
       f(10) = fv
 
 c  temperature flux equation
@@ -2067,7 +2070,8 @@ c  downwind velocity flux equation
 
 c  vertical velocity equation
 
-      f(7) = -self%gravitational_constant*(rho-rhoa)*bb*h
+      f(7) = -self%gravitational_constant
+     1     *(rho-self%ambient_air_density)*bb*h
       f(11) = fw
 
 c  center height equation
@@ -2086,7 +2090,7 @@ c  released mass in cloud
 
 
       subroutine slopepf(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c
 c  calculates the gradients used in the transient puff convervation
@@ -2096,7 +2100,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2124,7 +2128,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2168,19 +2172,19 @@ c  mass and downwind cloud center equations
       endif
 
       vhwb = sr3*((vx*bb+v*bbx)*h + w*bb*bbx)
-      f(1) = rhoa*vhwb + rqs
+      f(1) = self%ambient_air_density*vhwb + rqs
       f(2) = u-atau*x
 
 c  half-width equation
 
-      f(3) = sr3*(rhoa/rho)*v + vg
+      f(3) = sr3*(self%ambient_air_density/rho)*v + vg
 
 c  b parameter equation
 
       f(4) = (vg*b)/bb
 
 c  half-length equation
-      f(5) = sr3*(rhoa/rho)*vx + ug
+      f(5) = sr3*(self%ambient_air_density/rho)*vx + ug
 
 c  bx parameter equation
 
@@ -2188,7 +2192,8 @@ c  bx parameter equation
 
 c  crosswind velocity equations
 
-      fgrv = alfgv*self%gravitational_constant*(rho-rhoa)*h*h
+      fgrv = alfgv*self%gravitational_constant
+     1     *(rho-self%ambient_air_density)*h*h
 
       f(7) = fgrv*bbx
       f(13) = fv
@@ -2205,7 +2210,8 @@ c  downwind velocity flux equation
 
 c  vertical velocity equation
 
-      f(11) = -self%gravitational_constant*(rho-rhoa)*bb*bbx*h
+      f(11) = -self%gravitational_constant
+     1      *(rho-self%ambient_air_density)*bb*bbx*h
       f(15) = fw
 
 c  center height equation
@@ -2220,14 +2226,14 @@ c  center height equation
 
 
       subroutine solve(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c  solves the steady state plume conservation equations
       integer :: nx
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2255,7 +2261,7 @@ c  solves the steady state plume conservation equations
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2305,7 +2311,7 @@ c  solves the steady state plume conservation equations
 
 
       subroutine solvepf(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c
 c  solves the transient puff conservation equations
@@ -2314,7 +2320,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2342,7 +2348,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2397,7 +2403,7 @@ c
 
 
       subroutine thermo(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c
 c  calculates the thermodynamic properties
@@ -2406,7 +2412,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2442,7 +2448,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2679,8 +2685,9 @@ c
       if (icyc .eq. 0) go to 70
    65 continue
 
-   70 betm = (rhoa/rhowl)*cmwd + (rhoa/self%source_liquid_density)*cmed
-      rho = rhoa*ta/(alfm*t + betm*ta)
+   70 betm = (self%ambient_air_density/rhowl)*cmwd 
+     1     + (self%ambient_air_density/self%source_liquid_density)*cmed
+      rho = self%ambient_air_density*ta/(alfm*t + betm*ta)
 
       return
       end
@@ -2690,7 +2697,7 @@ c
 
 
       subroutine eval(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c
 c  calculates the steady state plume velocities and height
@@ -2699,7 +2706,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2731,7 +2738,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2804,7 +2811,7 @@ c   calculate downwind velocity
 
       ut0 = uab*(1.-cm) + (sru0 + sfue)/r
       utg3 = alfg * self%gravitational_constant *
-     1 (rho-rhoa)*r/(2.*bb*rho*rho)
+     1 (rho-self%ambient_air_density)*r/(2.*bb*rho*rho)
 
       if (utg3 .le. 0.) then
          ut2 = ut0
@@ -2833,7 +2840,8 @@ c   calculate downwind velocity
  1050 continue
  1052 continue
 
-      if ((h .lt. (zc+zc)) .and. ((alfg*rho) .gt. (alfg*rhoa))) then
+      if ((h .lt. (zc+zc)) 
+     1   .and. ((alfg*rho) .gt. (alfg*self%ambient_air_density))) then
          h = zc + zc
          u = r/(rho*bb*h)
       endif
@@ -2877,7 +2885,7 @@ c  calculate crosswind velocities
             endif
             wc = ew*(gw + r0*wc0)/r
            else
-            if (rho .gt. rhoa) then
+            if (rho .gt. self%ambient_air_density) then
                if (vg0 .eq. 0.) then
                   ev = 1.
                   vg0 = -2.*wc0*bb0/h0
@@ -2897,7 +2905,7 @@ c  calculate crosswind velocities
             endif
          endif
         else
-         if (rho .gt. rhoa) then
+         if (rho .gt. self%ambient_air_density) then
             if (vg0 .eq. 0.) then
                ev = 1.
               else
@@ -2918,7 +2926,7 @@ c  calculate crosswind velocities
 
 
       subroutine evalpf(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c
 c  calculates the transient puff velocities and height
@@ -2927,7 +2935,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2957,7 +2965,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3039,7 +3047,7 @@ c  calculate crosswind velocities
           endif
           wc = ew*(gw + r0*wc0)/r
         else
-          if(rho .gt. rhoa) then
+          if(rho .gt. self%ambient_air_density) then
             if (vg0 .eq. 0.) then
                ev = 1.
                rbxy = bb0*bbx0/(bb0*bb0+bbx0*bbx0)
@@ -3077,7 +3085,7 @@ c  calculate crosswind velocities
 
 
       subroutine entran(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c
 c  calculates the entrainment rates and surface fluxes
@@ -3086,7 +3094,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3119,7 +3127,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3150,10 +3158,10 @@ c
 c  vertical entrainment
 
       ubar = .5*ug
-      urho = ubar*rhoa/rho
+      urho = ubar*self%ambient_air_density/rho
       vbar = .5*vg
-      vrho = vbar*rhoa/rho
-      delu = (uab-u) * (rhoa/rho)
+      vrho = vbar*self%ambient_air_density/rho
+      delu = (uab-u) * (self%ambient_air_density/rho)
       cf = uastr/uab
       umgs = cf * u
       ugmgs = cf * ubar
@@ -3197,7 +3205,8 @@ c  vertical entrainment
  2045 ustr2 = ubs2 + uhs2 + uts2
       ustr = sqrt(ustr2)
 
-      galc = cri*self%gravitational_constant*(rho-rhoa)/rho
+      galc = cri*self%gravitational_constant
+     1     *(rho-self%ambient_air_density)/rho
       if (galc .lt. 0.) galc = 0.
       alah = ala0/(1.+htp/zl)
       al = (alah*uastr2+galc)/ustr2
@@ -3291,7 +3300,7 @@ c  velocity and temperature fluxes
 
 
       subroutine store(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c
 c  stores the output variables
@@ -3300,7 +3309,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3329,7 +3338,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3390,14 +3399,14 @@ c
 
 
       subroutine editin(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c  writes the input values used in the problem
       integer :: nx,keval
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3429,7 +3438,7 @@ c  writes the input values used in the problem
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3461,7 +3470,7 @@ c   release gas properties
       write (3,101) self%source_gas_molecular_weight,
      1              self%vapor_heat_capacity,
      1              self%source_gas_temperature,
-     1              rhos,
+     1              self%source_gas_density,
      1              tbp,
      1              cmed,
      1              cpsl,
@@ -3514,7 +3523,9 @@ c   field parameters
 
 c   ambient meteorological variables
 
-      write (3,104) wmae,cpaa,rhoa,za,pa,ua,ta,rh,uastr,stab,ala,z0
+      write (3,104) wmae,cpaa,
+     1              self%ambient_air_density,
+     1              za,pa,ua,ta,rh,uastr,stab,ala,z0
 
   104 format (//'ambient meteorological properties'//,1p,
      1 ' molecular weight of ambient air (kg)   ',10x,'- wmae  =',e12.4/
@@ -3553,14 +3564,14 @@ c   additional parameters
 
 
       subroutine edits(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c  writes the instantaneous spatially averaged cloud properties
       integer :: nx
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3589,7 +3600,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3642,14 +3653,14 @@ c  writes the instantaneous spatially averaged cloud properties
 
 
       subroutine editcc(self)
-      use slab_fortran_wrapper, only: SlabData
+      use slab_data, only: SlabData
       type(SlabData) :: self
 c  calculates and writes the time averaged volume concentration
       integer :: nx,keval,nzpm
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      real(4) :: wma,cpa,pa,qs,ws,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3684,7 +3695,7 @@ c  calculates and writes the time averaged volume concentration
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,rhoa,rhos,pa,qs,ws,hrf,urf
+      common wma,cpa,pa,qs,ws,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3751,8 +3762,8 @@ c   betacp(i) = effective beta with meander
       sig0 = asig*(sqrt(1.+sigb*(xp(i)-xp(1)))-1.)
       rjt = 1.
       if (self%spill_type .eq. 2)  then
-         rm3 = ((rhoa*uap(i)*(1.-cmp(i)))/(rhos*us*cmp(i)))
-     1         **(1./3.)
+         rm3 = ((self%ambient_air_density*uap(i)*(1.-cmp(i))) / 
+     1  (self%source_gas_density*us*cmp(i)))**(1./3.)
          rlg = log((1.-rm3+(rm3*rm3))/((1.+rm3)*(1.+rm3)))
          rit = atan(((2.*rm3)-1.)/sr3) + atan(1./sr3)
          if (rm3 .lt. .1)  then

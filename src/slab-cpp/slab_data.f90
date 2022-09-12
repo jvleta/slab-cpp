@@ -1,62 +1,61 @@
 module slab_data
   implicit none
 
-  type :: SlabInput
-    integer :: idspl
-    integer :: ncalc
-    real(8) :: wms
-    real(8) :: cps
-    real(8) :: tbp
-    real(8) :: cmed0
-    real(8) :: dhe
-    real(8) :: cpsl
-    real(8) :: rhosl
-    real(8) :: spb
-    real(8) :: spc
-    real(8) :: ts
-    real(8) :: qs
-    real(8) :: as
-    real(8) :: tsd
-    real(8) :: qtis
-    real(8) :: hs
-    real(8) :: tav
-    real(8) :: xffm
-    real(8) :: zp(4)
-    real(8) :: z0 ! surface roughness height (m) 
-    real(8) :: za ! ambient measurement height (m) 
-    real(8) :: ua ! ambient wind speed (m)
-    real(8) :: ta ! ambient temperature (K)
-    real(8) :: rh ! relative humidity (%)
-    real(8) :: stab ! atmospheric stability class value
-    real(8) :: ala ! inverse monin-obukhov length (1/m)
-  end type
-contains
+type SlabData
+  ! Release Gas Properties
+  real(4) :: source_gas_molecular_weight
+  real(4) :: vapor_heat_capacity
+  real(4) :: source_gas_temperature
+  real(4) :: source_gas_density
+  real(4) :: boiling_point_temperature
+  ! real(4) :: liquid_mass_fraction
+  ! real(4) :: liquid_heat_capacity
+  ! real(4) :: heat_of_vaporization
+  real(4) :: source_liquid_density
+  ! real(4) :: saturation_pressure_constant_a
+  ! real(4) :: saturation_pressure_constant_b
+  ! real(4) :: saturation_pressure_constant_c
   
-  subroutine echo_input(input)
-    type(SlabInput) :: input
-    integer         :: i
-      write (3,114) input%idspl,input%ncalc,input%wms,input%cps,input%tbp, &
-                    input%cmed0,input%dhe,input%cpsl,input%rhosl,input%spb, &
-                    input%spc,input%ts,input%qs,input%as,input%tsd,input%qtis, & 
-                    input%hs,input%tav,input%xffm,(i,input%zp(i),i=1,4)
+  ! Spill Characteristics
+  integer :: spill_type
+  ! real(4) :: mass_source_rate
+  ! real(4) :: continuous_source_duration
+  ! real(4) :: continuous_source_mass
+  ! real(4) :: instantaneous_source_mass
+  ! real(4) :: source_area
+  ! real(4) :: vertical_vapor_velocity
+  ! real(4) :: source_half_weight
+  ! real(4) :: source_height
+  ! real(4) :: horizontal_vapor_velocity
+  
+  ! Field Parameters
+  ! real(4) :: concentration_averaging_time
+  ! real(4) :: concentration_measurement_height_1
+  ! real(4) :: concentration_measurement_height_2
+  ! real(4) :: concentration_measurement_height_3
+  ! real(4) :: concentration_measurement_height_4
+  
+  ! Ambient Meteorological Properties
+  ! real(4) :: ambient_air_molecular_properties
+  ! real(4) :: ambient_air_heat_capacity
+  real(4) :: ambient_air_density
+  ! real(4) :: ambient_measurement_height
+  ! real(4) :: ambient_atmospheric_pressure
+  ! real(4) :: ambient_wind_speed
+  ! real(4) :: ambient_temperature
+  ! real(4) :: relative_humidity
+  ! real(4) :: ambient_friction_velocity
+  ! real(4) :: atmospheric_stability_class_value
+  ! real(4) :: inverse_monin_obukhov_length
+  ! real(4) :: surface_roughness_height
 
-  114 format (///'problem input'//'  idspl =',5x,i5/'  ncalc =',5x,i5/ &
-      '  wms   =',f10.6/'  cps   =',f10.2/ &
-      '  tbp   =',f10.2/'  cmed0 =',f10.2/ &
-      '  dhe   =',f10.0/'  cpsl  =',f10.2/'  rhosl =',f10.2/ &
-      '  spb   =',f10.2/'  spc   =',f10.2/ &
-      '  ts    =',f10.2/'  qs    =',f10.2/'  as    =',f10.2/ &
-      '  tsd   =',f10.0/'  qtis  =',f10.2/'  hs    =',f10.2/ &
-      '  tav   =',f10.2/'  xffm  =',f10.2/('  zp(',i1,') =',f10.2)) 
+  ! Additional Parameters
+  integer :: substep_multiplier
+  integer :: num_calculation_substeps
+  real(4) :: gravitational_constant
+  real(4) :: gas_constant
+  real(4) :: von_karman_constant
+end type
+  
 
-      write (3,115) input%z0,input%za,input%ua,input%ta,input%rh,input%stab
-  115 format ('  z0    =',f10.6/'  za    =',f10.2/'  ua    =',f10.2/ &
-      '  ta    =',f10.2/,'  rh    =',f10.2/,'  stab  =',f10.2) 
-
-      if (input%stab .eq. 0.) then
-      write (3,112) input%ala
-  112 format ('  ala   =',f10.4)
-      endif
-
-  end subroutine
 end module
