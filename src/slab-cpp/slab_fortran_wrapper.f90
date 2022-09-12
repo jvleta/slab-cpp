@@ -4,9 +4,9 @@ implicit none
 
 type SlabData
   ! Release Gas Properties
-  ! real(4) :: source_gas_molecular_weight
-  ! real(4) :: vapor_heat_capacity
-  ! real(4) :: source_gas_temperature
+  real(4) :: source_gas_molecular_weight
+  real(4) :: vapor_heat_capacity
+  real(4) :: source_gas_temperature
   ! real(4) :: source_gas_density
   ! real(4) :: boiling_point_temperature
   ! real(4) :: liquid_mass_fraction

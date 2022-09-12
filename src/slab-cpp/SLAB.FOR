@@ -162,7 +162,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,zp,
+      real(4) :: za,ta,ua,z0,zp,
      1           as,xffm,tav,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -213,7 +213,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -250,8 +250,12 @@ c  ============
 
       read (2,107) self%spill_type,self%substep_multiplier
   107 format (i5)
-      read (2,108) wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,spc
-      read (2,108) ts,qs,as,tsd,qtis,hs
+      read (2,108) self%source_gas_molecular_weight,
+     1             self%vapor_heat_capacity,
+     1             tbp,
+     1             cmed0,dhe,cpsl,rhosl,spb,spc
+      read (2,108) self%source_gas_temperature,
+     1             qs,as,tsd,qtis,hs
       read (2,108) tav,xffm,(zp(i),i=1,4)
   108 format (f10.3)
 
@@ -327,11 +331,14 @@ c =============
 
 
       write (3,114) self%spill_type,self%substep_multiplier,
-     1 wms,cps,tbp,cmed0,dhe,
+     1 self%source_gas_molecular_weight,
+     1 self%vapor_heat_capacity,
+     1 self%source_gas_temperature,cmed0,dhe,
      1 cpsl,
      1 rhosl,
      1 spb,
-     1 spc,ts,qs,as,tsd,qtis,hs,tav,xffm,(i,zp(i),i=1,4)
+     1 spc,self%source_gas_temperature,
+     1 qs,as,tsd,qtis,hs,tav,xffm,(i,zp(i),i=1,4)
 
   114 format (///'problem input'//'  idspl =',5x,i5/'  ncalc =',5x,i5/
      1 '  wms   =',f10.6/'  cps   =',f10.2/
@@ -362,15 +369,16 @@ c   gas constant
 c  saturation pressure constant default
 
       if (spb .lt. 0.) then
-        spb = dhe*wms/self%gas_constant
+        spb = dhe*self%source_gas_molecular_weight/self%gas_constant
         spc = 0.
       endif
 
 c  boiling point temperature check
 
       spa = spb/(tbp+spc)
-      if (ts .lt. tbp) ts = tbp
-      if (cmed0 .gt. 0.) ts = tbp
+      if (self%source_gas_temperature .lt. tbp) 
+     1   self%source_gas_temperature = tbp
+      if (cmed0 .gt. 0.) self%source_gas_temperature = tbp
 
 c  initial droplet concentration
 
@@ -543,7 +551,8 @@ c ====================================
 c ====================================
 
 
-  150 rhos = wms*pa/(self%gas_constant*ts)
+  150 rhos = self%source_gas_molecular_weight
+     1 *pa/(self%gas_constant*self%source_gas_temperature)
       qtcs = qs*tsd
       hqtcs = .5*qtcs
       nxtr = mffm + 1
@@ -572,9 +581,9 @@ c ==========================
 c ========================
 c  horizontal jet release
 c ========================
-      t0 = ts
+      t0 = self%source_gas_temperature
       cmev0 = 1.-cmed
-      alfm = (wmae/wms)*cmev0
+      alfm = (wmae/self%source_gas_molecular_weight)*cmev0
       betm = (rhoa/rhosl)*cmed
       rho = rhoa*ta/(alfm*t0+betm*ta)
 
@@ -608,7 +617,7 @@ c ========================
       cmwvp(1) = cmwv0
       cmevp(1) = cmev0
       cmdap(1) = 0.
-      cp0 = cmev0*cps + cmed*cpsl
+      cp0 = cmev0*self%vapor_heat_capacity + cmed*cpsl
 
       bse = 1.
       zc = hs
@@ -630,9 +639,9 @@ c  vertical jet release
 c ======================
 
 
-      t0 = ts
+      t0 = self%source_gas_temperature
       cmev0 = 1.-cmed
-      alfm = (wmae/wms)*cmev0
+      alfm = (wmae/self%source_gas_molecular_weight)*cmev0
       betm = (rhoa/rhosl)*cmed
       rho = rhoa*ta/(alfm*t0+betm*ta)
       rho0 = rho
@@ -676,14 +685,16 @@ c  dense gas jet plume rise
          cvpk = 1.69*rwus/((hpr/ds)**1.85)
          if (cvpk .gt. .99) cvpk = .99
          cv = (.5236*(1.-cvpk) + cvpk)*cvpk
-         cm = wms*cv/(wmae+(wms-wmae)*cv)
+         cm = self%source_gas_molecular_weight
+     1      *cv/(wmae+(self%source_gas_molecular_weight
+     1      -wmae)*cv)
          r0 = .5*qs
          r = r0/cm
          cm0 = 1.
          cmev0 = 1.-cmed
          cmw0 = 0.
          cmwv0 = 0.
-         cp0 = cmev0*cps + cmed*cpsl
+         cp0 = cmev0*self%vapor_heat_capacity + cmed*cpsl
          xn = 1.+xpr
          sft = 0.
          call thermo(self)
@@ -723,10 +734,11 @@ c  momentum or buoyant jet plume rise
             bb = h*bb/hmx
             h = hmx
          endif
-         ts = (wms/wmae)*ta
-         t0 = ts
+         self%source_gas_temperature = (self%source_gas_molecular_weight
+     1   /wmae)*ta
+         t0 = self%source_gas_temperature
          tp(1) = t0
-         tbp = .99*amin1(ts,ta)
+         tbp = .99*amin1(self%source_gas_temperature,ta)
          spa = spb/(tbp+spc)
          spaw = spbw/tbp
          cm0 = 1.
@@ -739,8 +751,9 @@ c  momentum or buoyant jet plume rise
          cmev0 = 1.
          cmevp(1) = cmev0
          cmdap(1) = 0.
-         cps = (wmae/wms)*cpa
-         cp0 = cps
+         self%vapor_heat_capacity = (wmae / 
+     1   self%source_gas_molecular_weight)*cpa
+         cp0 = self%vapor_heat_capacity
          zc = hs
          zcmx = hmx-.5*h
          if (zc .gt. zcmx) zc = zcmx
@@ -766,7 +779,7 @@ c ==========================================================
       ws = qs/(rhos*as)
       bse = bs
 
-      t0 = ts
+      t0 = self%source_gas_temperature
       tp(1) = t0
       cm0 = 1.
       cmp(1) = cm0
@@ -779,8 +792,8 @@ c ==========================================================
       if (qtis .eq. 0.) cmed = 0.
       cmev0 = 1.-cmed
       cmevp(1) = cmev0
-      cp0 = cmev0*cps + cmed*cpsl
-      alfm = (wmae/wms)*cmev0
+      cp0 = cmev0*self%vapor_heat_capacity + cmed*cpsl
+      alfm = (wmae/self%source_gas_molecular_weight)*cmev0
       betm = (rhoa/rhosl)*cmed
       rho = rhoa*ta/(alfm*t0+betm*ta)
       rho0 = rho
@@ -1309,7 +1322,8 @@ c ========================================
       endif
       rtcm = (1.-cm)/cm
       cmp(i) = 1./(1.+xir*xir*rtcm)
-      cvp(i) = wmae*cmp(i)/(wms+(wmae-wms)*cmp(i))
+      cvp(i) = wmae*cmp(i)/(self%source_gas_molecular_weight
+     1        +(wmae-self%source_gas_molecular_weight)*cmp(i))
       cmdap(i) = (1.-cmp(i))*cmdaa
       cmwp(i) = (1.-cmp(i))*cmwa
       rhop(i) = -1.
@@ -1989,7 +2003,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
@@ -2093,7 +2107,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
@@ -2124,7 +2138,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2224,7 +2238,7 @@ c  solves the steady state plume conservation equations
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
@@ -2255,7 +2269,7 @@ c  solves the steady state plume conservation equations
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2311,7 +2325,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
@@ -2342,7 +2356,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2403,7 +2417,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -2442,7 +2456,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2468,7 +2482,8 @@ c
          cm = sqs/r
       endif
 
-      cv = (wmae*cm)/(wms+(wmae-wms)*cm)
+      cv = (wmae*cm)/(self%source_gas_molecular_weight
+     1     +(wmae-self%source_gas_molecular_weight)*cm)
 
       cmw = (1.-cm)*cmwa
       cmda = (1.-cm)*(1.-cmwa)
@@ -2479,10 +2494,11 @@ c
       cmwd = cmw-cmwv
       cmed = cm-cmev
 
-      dhe0 = dhe + tbp*(cpsl-cps)
+      dhe0 = dhe + tbp*(cpsl-self%vapor_heat_capacity)
       dhw0 = dhw + 298.2*(cpwl-cpwv)
 
-      cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl + cmev*cps + cmed*cpsl
+      cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl + 
+     1     cmev*self%vapor_heat_capacity + cmed*cpsl
 
       if (sft .eq. 0.) then
          sfte = 0.
@@ -2490,16 +2506,21 @@ c
          sfte = -cp0*(t0-ta)*abs(sft)/(abs(sft) + r0*cp0*abs(t0-ta))
       endif
 
-      etrn = (1.-cm)*cpaa*ta + cm*cps*ts
-     1 + (r0/r)*(cp0*t0-(1.-cm0)*cpaa*ta-cm0*cps*ts + sfte)
+      etrn = (1.-cm)*cpaa*ta 
+     1     + cm*self%vapor_heat_capacity
+     1     * self%source_gas_temperature
+     1 + (r0/r)*(cp0*t0-(1.-cm0)
+     1 *cpaa*ta-cm0*self%vapor_heat_capacity
+     1 *self%source_gas_temperature + sfte)
 
       t = etrn/cp
 
-      alfm = wmae*(cmda/wma + cmwv/wmw + cmev/wms)
+      alfm = wmae*(cmda/wma + cmwv/wmw 
+     1     + cmev/self%source_gas_molecular_weight)
       fft = exp(spa-spb/(t+spc))
       ggt = exp(spaw-spbw/t)
       pw = (wmae*cmw)/(alfm*wmw)
-      pe = (wmae*cm)/(alfm*wms)
+      pe = (wmae*cm)/(alfm*self%source_gas_molecular_weight)
 
       ie = 0
       iw = 0
@@ -2517,7 +2538,8 @@ c
          fft = 1. + spa*(t-tbp)/(tbp+spc)
          ffpr = spa/(tbp+spc)
       endif
-      alfs = wms*(cmda/wma + cmwv/wmw)
+      alfs = self%source_gas_molecular_weight
+     1     *(cmda/wma + cmwv/wmw)
       ab2 = .5*((1.-fft)/ffpr + (dhe0/cp)*(alfs+cmevt))
       ac = dhe0*(alfs - (1.-fft)*cmevt)/(cp*ffpr)
       dlti = ab2 - sqrt(ab2*ab2 + ac)
@@ -2538,7 +2560,7 @@ c
    10 do 30 i=1,15
       if (ie .eq. 0) then
         cmwvm = amin1(cmwvs,cmw)
-        alfs = wms*(cmda/wma + cmwvm/wmw)
+        alfs = self%source_gas_molecular_weight*(cmda/wma + cmwvm/wmw)
         fftt = cm/(cm+alfs)
         if (fft .lt. fftt) then
            cmevs = alfs*fft/(1.-fft)
@@ -2555,7 +2577,7 @@ c
 
    20 if (iw .eq. 0) then
         cmevm = amin1(cmevs,cm)
-        alfw = wmw*(cmda/wma + cmevm/wms)
+        alfw = wmw*(cmda/wma + cmevm/self%source_gas_molecular_weight)
         ggtt = cmw/(cmw+alfw)
         if (ggt .lt. ggtt) then
            cmwvs = alfw*ggt/(1.-ggt)
@@ -2575,13 +2597,14 @@ c
 
       cmwds = cmw-cmwvm
       cmeds = cm-cmevm
-      cpstr = cmda*cpa + cmwvm*cpwv + cmwds*cpwl + cmevm*cps +
+      cpstr = cmda*cpa + cmwvm*cpwv + cmwds*cpwl 
+     1      + cmevm*self%vapor_heat_capacity +
      1 cmeds*cpsl
       tstra = (etrn + dhw0*(cmwvt-cmwvs) + dhe0*(cmevt-cmevs))/cpstr
 
       gfnc = tstr - tstra
       dhwt = dhw0 + tstra*(cpwv-cpwl)
-      dhet = dhe0 + tstra*(cps-cpsl)
+      dhet = dhe0 + tstra*(self%vapor_heat_capacity-cpsl)
       gfncp = 1. + (dhwt*cmwvspr + dhet*cmevspr)/cpstr
       tstr1 = tstr - gfnc/gfncp
 
@@ -2596,12 +2619,13 @@ c
 
    40 cmwvm = amin1(cmwvs,cmw)
       cmevm = amin1(cmevs,cm)
-      alfm = wmae*(cmda/wma+cmwvm/wmw+cmevm/wms)
+      alfm = wmae*(cmda/wma+cmwvm/wmw 
+     1     + cmevm/self%source_gas_molecular_weight)
 
       if (ie .eq. 1) then
          cmev = cm
         else
-         cmevs = alfm*wms*fft/wmae
+         cmevs = alfm * self%source_gas_molecular_weight*fft/wmae
          if (cmevs .gt. cm) then
             cmev = cm
             ie = 1
@@ -2625,13 +2649,15 @@ c
 
       cmwd = cmw-cmwv
       cmed = cm-cmev
-      alfm = (cmda/wma + cmwv/wmw + cmev/wms)*wmae
-      cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl + cmev*cps + cmed*cpsl
+      alfm = (cmda/wma + cmwv/wmw 
+     1     + cmev/self%source_gas_molecular_weight)*wmae
+      cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl 
+     1   + cmev*self%vapor_heat_capacity + cmed*cpsl
       t = (etrn+dhw0*(cmwvt-cmwv) + dhe0*(cmevt-cmev))/cp
 
       if (ie .eq. 1) then
          fft = exp(spa-spb/(t+spc))
-         cmevsc = (alfm*wms*fft)/wmae
+         cmevsc = (alfm*self%source_gas_molecular_weight*fft)/wmae
          if (cmevsc .lt. cm) then
             ie = 0
             icyc = 1
@@ -2684,7 +2710,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -2719,7 +2745,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2912,7 +2938,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -2945,7 +2971,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3071,7 +3097,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -3107,7 +3133,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3285,7 +3311,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -3317,7 +3343,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3382,7 +3408,7 @@ c  writes the input values used in the problem
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -3417,7 +3443,7 @@ c  writes the input values used in the problem
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3429,7 +3455,10 @@ c  writes the input values used in the problem
 
 c   release gas properties
 
-      write (3,101) wms,cps,ts,rhos,tbp,cmed,cpsl,dhe,rhosl,spa,spb,spc
+      write (3,101) self%source_gas_molecular_weight,
+     1              self%vapor_heat_capacity,
+     1              self%source_gas_temperature,
+     1              rhos,tbp,cmed,cpsl,dhe,rhosl,spa,spb,spc
 
   101 format (//'release gas properties'//,1p,
      1 ' molecular weight of source gas (kg)     ',10x,'- wms  =',e12.4/
@@ -3536,7 +3565,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
+      real(4) :: za,ta,ua,z0,nzpm,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
@@ -3569,7 +3598,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3625,7 +3654,7 @@ c  calculates and writes the time averaged volume concentration
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,zp,
+      real(4) :: za,ta,ua,z0,zp,
      1           as,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -3663,7 +3692,7 @@ c  calculates and writes the time averaged volume concentration
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
+      common za,ta,ua,z0,nzpm,zp(5),
      1 as,xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
