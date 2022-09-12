@@ -30,10 +30,7 @@ type SlabData
   
   ! Field Parameters
   ! real(4) :: concentration_averaging_time
-  ! real(4) :: concentration_measurement_height_1
-  ! real(4) :: concentration_measurement_height_2
-  ! real(4) :: concentration_measurement_height_3
-  ! real(4) :: concentration_measurement_height_4
+  real(4) :: concentration_measurement_height(4)
   
   ! Ambient Meteorological Properties
   ! real(4) :: ambient_air_molecular_properties

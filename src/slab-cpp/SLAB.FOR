@@ -157,7 +157,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -206,7 +206,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -252,7 +252,7 @@ c  ============
   107 format (i5)
       read (2,108) self%source_gas_molecular_weight,
      1             self%vapor_heat_capacity,
-     1             tbp,
+     1             self%boiling_point_temperature,
      1             cmed0,dhe,cpsl,
      1             self%source_liquid_density,
      1             spb,
@@ -378,11 +378,15 @@ c  saturation pressure constant default
 
 c  boiling point temperature check
 
-      spa = spb/(tbp+spc)
-      if (self%source_gas_temperature .lt. tbp) 
-     1   self%source_gas_temperature = tbp
-      if (cmed0 .gt. 0.) self%source_gas_temperature = tbp
+      spa = spb/(self%boiling_point_temperature+spc)
+      if (self%source_gas_temperature .lt. 
+     1    self%boiling_point_temperature) then
+        self%source_gas_temperature = self%boiling_point_temperature
+      end if
 
+      if (cmed0 .gt. 0.) then
+        self%source_gas_temperature=self%boiling_point_temperature
+      end if
 c  initial droplet concentration
 
       cmed = cmed0
@@ -741,9 +745,10 @@ c  momentum or buoyant jet plume rise
      1   /wmae)*ta
          t0 = self%source_gas_temperature
          tp(1) = t0
-         tbp = .99*amin1(self%source_gas_temperature,ta)
-         spa = spb/(tbp+spc)
-         spaw = spbw/tbp
+         self%boiling_point_temperature = .99
+     1       *amin1(self%source_gas_temperature,ta)
+         spa = spb/(self%boiling_point_temperature+spc)
+         spaw = spbw/self%boiling_point_temperature
          cm0 = 1.
          cmp(1) = cm0
          cvp(1) = 1.
@@ -2003,7 +2008,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -2032,7 +2037,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
 
 c  mass equation
@@ -2109,7 +2114,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -2138,7 +2143,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -2242,7 +2247,7 @@ c  solves the steady state plume conservation equations
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -2271,7 +2276,7 @@ c  solves the steady state plume conservation equations
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -2329,7 +2334,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -2358,7 +2363,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -2421,7 +2426,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -2458,7 +2463,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -2503,7 +2508,8 @@ c
       cmwd = cmw-cmwv
       cmed = cm-cmev
 
-      dhe0 = dhe + tbp*(cpsl-self%vapor_heat_capacity)
+      dhe0 = dhe + self%boiling_point_temperature
+     1     *(cpsl-self%vapor_heat_capacity)
       dhw0 = dhw + 298.2*(cpwl-cpwv)
 
       cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl + 
@@ -2544,8 +2550,9 @@ c
       if (ie .eq. 1)  go to 5
       ffpr = (spb*fft)/((t+spc)*(t+spc))
       if (fft .gt. 1.)  then
-         fft = 1. + spa*(t-tbp)/(tbp+spc)
-         ffpr = spa/(tbp+spc)
+         fft = 1. + spa*(t-self%boiling_point_temperature)/
+     1     (self%boiling_point_temperature+spc)
+         ffpr = spa/(self%boiling_point_temperature+spc)
       endif
       alfs = self%source_gas_molecular_weight
      1     *(cmda/wma + cmwv/wmw)
@@ -2715,7 +2722,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -2748,7 +2755,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -2944,7 +2951,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -2975,7 +2982,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -3103,7 +3110,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -3137,7 +3144,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -3318,7 +3325,7 @@ c
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -3348,7 +3355,7 @@ c
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -3415,7 +3422,7 @@ c  writes the input values used in the problem
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -3448,7 +3455,7 @@ c  writes the input values used in the problem
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -3471,7 +3478,7 @@ c   release gas properties
      1              self%vapor_heat_capacity,
      1              self%source_gas_temperature,
      1              self%source_gas_density,
-     1              tbp,
+     1              self%boiling_point_temperature,
      1              cmed,
      1              cpsl,
      1              dhe,
@@ -3580,7 +3587,7 @@ c  writes the instantaneous spatially averaged cloud properties
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -3611,7 +3618,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
@@ -3669,7 +3676,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
       real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
@@ -3705,7 +3712,7 @@ c  calculates and writes the time averaged volume concentration
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
       common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
