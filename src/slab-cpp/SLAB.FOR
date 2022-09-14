@@ -167,7 +167,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1           dhw,cmdaa,cmwa,spaw,spbw,t0,
      1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr,msfm,mnfm,mffm
 
@@ -219,7 +219,7 @@ c
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 c  constants for calculating stability regions
@@ -258,7 +258,7 @@ c  ============
      1             self%liquid_heat_capacity,
      1             self%source_liquid_density,
      1             self%press_sat_const_b,
-     1             spc
+     1             self%press_sat_const_c
       read (2,108) self%source_gas_temperature,
      1             qs,as,tsd,qtis,hs
       read (2,108) tav,xffm,(zp(i),i=1,4)
@@ -343,7 +343,8 @@ c =============
      1 self%liquid_heat_capacity,
      1 self%source_liquid_density,
      1 self%press_sat_const_b,
-     1 spc,self%source_gas_temperature,
+     1 self%press_sat_const_c,
+     1 self%source_gas_temperature,
      1 qs,as,tsd,qtis,hs,tav,xffm,(i,zp(i),i=1,4)
 
   114 format (///'problem input'//'  idspl =',5x,i5/'  ncalc =',5x,i5/
@@ -378,14 +379,15 @@ c  saturation pressure constant default
         self%press_sat_const_b = self%heat_of_vaporization 
      1      * self%source_gas_molecular_weight
      1      / self%gas_constant
-        spc = 0.
+        self%press_sat_const_c = 0.
       endif
 
 c  boiling point temperature check
 
       self%press_sat_const_a = 
      1    self%press_sat_const_b
-     1    / (self%boiling_point_temperature+spc)
+     1    / (self%boiling_point_temperature
+     1    +  self%press_sat_const_c)
       if (self%source_gas_temperature .lt. 
      1    self%boiling_point_temperature) then
         self%source_gas_temperature = self%boiling_point_temperature
@@ -758,7 +760,8 @@ c  momentum or buoyant jet plume rise
          self%boiling_point_temperature = .99
      1       *amin1(self%source_gas_temperature,ta)
          self%press_sat_const_a = self%press_sat_const_b 
-     1       / (self%boiling_point_temperature + spc)
+     1       / (self%boiling_point_temperature 
+     1        + self%press_sat_const_c)
          spaw = spbw/self%boiling_point_temperature
          cm0 = 1.
          cmp(1) = cm0
@@ -2030,7 +2033,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       ! local variables
@@ -2136,7 +2139,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       ! local variables
@@ -2168,7 +2171,7 @@ c
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -2269,7 +2272,7 @@ c  solves the steady state plume conservation equations
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       ! local variables
@@ -2301,7 +2304,7 @@ c  solves the steady state plume conservation equations
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -2356,7 +2359,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       ! local variables
@@ -2388,7 +2391,7 @@ c
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -2448,7 +2451,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       integer :: idpf,nxtr
@@ -2488,7 +2491,7 @@ c
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -2548,7 +2551,7 @@ c
      1     + cmev/self%source_gas_molecular_weight)
       fft = exp(self%press_sat_const_a 
      1    - self%press_sat_const_b 
-     1    / (t + spc))
+     1    / (t + self%press_sat_const_c))
       ggt = exp(spaw-spbw/t)
       pw = (wmae*cmw)/(alfm*wmw)
       pe = (wmae*cm)/(alfm*self%source_gas_molecular_weight)
@@ -2565,13 +2568,16 @@ c
 
       if (ie .eq. 1)  go to 5
       ffpr = (self%press_sat_const_b * fft) 
-     1     / ((t + spc) * (t + spc))
+     1     / ((t +  self%press_sat_const_c) 
+     1     *  (t +  self%press_sat_const_c))
       if (fft .gt. 1.)  then
          fft = 1. + self%press_sat_const_a
-     1       * (t-self%boiling_point_temperature)/
-     1     (self%boiling_point_temperature+spc)
+     1       * (t-self%boiling_point_temperature)
+     1       / (self%boiling_point_temperature
+     1       +  self%press_sat_const_c)
          ffpr = self%press_sat_const_a
-     1        / (self%boiling_point_temperature+spc)
+     1        / (self%boiling_point_temperature 
+     1        +  self%press_sat_const_c)
       endif
       alfs = self%source_gas_molecular_weight
      1     *(cmda/wma + cmwv/wmw)
@@ -2582,7 +2588,8 @@ c
       dlti = amax1(dltm,dlti)
       t = t + dlti
       fft = exp(self%press_sat_const_a 
-     1    - self%press_sat_const_b / (t+spc))
+     1    - self%press_sat_const_b 
+     1    / (t +  self%press_sat_const_c))
       ggt = exp(spaw - spbw/t)
     5 continue
 
@@ -2601,13 +2608,20 @@ c
         if (fft .lt. fftt) then
            cmevs = alfs*fft/(1.-fft)
            cmevspr = self%press_sat_const_b 
-     1             * cmevs/((1.-fft)*(tstr+spc)*(tstr+spc))
+     1             * cmevs 
+     1             / ((1. - fft)
+     1             * (tstr + self%press_sat_const_c) 
+     1             * (tstr + self%press_sat_const_c))
           else
            tesrt = self%press_sat_const_b
      1           / (self%press_sat_const_a-log(fftt)) 
-     1           - spc
+     1           -  self%press_sat_const_c
            cmevspr = self%press_sat_const_b
-     1             * cm / ((1.-fftt)*(tesrt+spc)*(tesrt+spc))
+     1             * cm / ((1.-fftt)
+     1             * (tesrt 
+     1             + self%press_sat_const_c)
+     1             * (tesrt 
+     1             + self%press_sat_const_c))
            cmevs = cmevspr*(tstr-tesrt) + cm
         endif
        else
@@ -2654,7 +2668,7 @@ c
 
       fft = exp(
      1          self%press_sat_const_a 
-     1        - self%press_sat_const_b/(tstr+spc)
+     1        - self%press_sat_const_b/(tstr+ self%press_sat_const_c)
      1         )
       ggt = exp(spaw-spbw/tstr)
 
@@ -2703,7 +2717,7 @@ c
       if (ie .eq. 1) then
          fft = exp(
      1             self%press_sat_const_a
-     1            -self%press_sat_const_b/(t+spc))
+     1            -self%press_sat_const_b/(t+ self%press_sat_const_c))
          cmevsc = (alfm*self%source_gas_molecular_weight*fft)/wmae
          if (cmevsc .lt. cm) then
             ie = 0
@@ -2763,7 +2777,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       integer :: idpf,nxtr
@@ -2799,7 +2813,7 @@ c
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -2992,7 +3006,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
 
@@ -3026,7 +3040,7 @@ c
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -3151,7 +3165,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
 
@@ -3188,7 +3202,7 @@ c
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -3366,7 +3380,7 @@ c
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
       
@@ -3396,7 +3410,7 @@ c
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -3460,7 +3474,7 @@ c  writes the input values used in the problem
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
 
@@ -3493,7 +3507,7 @@ c  writes the input values used in the problem
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -3510,7 +3524,7 @@ c   release gas properties
      1              self%source_liquid_density,
      1              self%press_sat_const_a,
      1              self%press_sat_const_b,
-     1              spc
+     1               self%press_sat_const_c
 
   101 format (//'release gas properties'//,1p,
      1 ' molecular weight of source gas (kg)     ',10x,'- wms  =',e12.4/
@@ -3624,7 +3638,7 @@ c  writes the instantaneous spatially averaged cloud properties
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
-      real(4) :: dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0,
      1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       
       ! Local variables
@@ -3657,7 +3671,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
@@ -3714,7 +3728,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1           dhw,cmdaa,cmwa,spaw,spbw,t0,
      1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       real(4) :: dhw
       integer :: idpf,nxtr
@@ -3754,7 +3768,7 @@ c  calculates and writes the time averaged volume concentration
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 dhw,cmdaa,cmwa,spc,spaw,spbw,t0,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
