@@ -18,7 +18,7 @@ type SlabData
   
   ! Spill Characteristics
   integer :: spill_type
-  ! real(4) :: mass_source_rate
+  real(4) :: mass_source_rate
   ! real(4) :: continuous_source_duration
   ! real(4) :: continuous_source_mass
   ! real(4) :: instantaneous_source_mass
