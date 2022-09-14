@@ -155,7 +155,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -204,7 +204,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -262,7 +262,7 @@ c  ============
       read (2,108) self%source_gas_temperature,
      1             self%mass_source_rate,
      1             as,
-     1             tsd,
+     1             self%continuous_source_duration,
      1             qtis,
      1             hs
       read (2,108) tav,xffm,(zp(i),i=1,4)
@@ -351,7 +351,7 @@ c =============
      1 self%source_gas_temperature,
      1 self%mass_source_rate,
      1 as,
-     1 tsd,
+     1 self%continuous_source_duration,
      1 qtis,
      1 hs,
      1 tav,
@@ -580,7 +580,7 @@ c ====================================
 
   150 self%source_gas_density = self%source_gas_molecular_weight
      1 *pa/(self%gas_constant*self%source_gas_temperature)
-      qtcs = self%mass_source_rate*tsd
+      qtcs = self%mass_source_rate*self%continuous_source_duration
       hqtcs = .5*qtcs
       nxtr = mffm + 1
       idpf = 0
@@ -600,7 +600,7 @@ c ==========================
       zc0 = 0.
       zcp(1) = 0.
       xcc0 = 0.
-      tim = tsd
+      tim = self%continuous_source_duration
       cmed = 0.
       call editin(self)
       go to 200
@@ -657,7 +657,7 @@ c ========================
       zcp(1) = zc
       xcc0 = 1.
       bxs0 = 0.
-      tim = tsd
+      tim = self%continuous_source_duration
 
       call editin(self)
       go to 400
@@ -682,7 +682,7 @@ c ======================
       qtis = 0.
       xcc0 = 1.
       bxs0 = 0.
-      tim = tsd
+      tim = self%continuous_source_duration
 
       call editin(self)
 
@@ -872,7 +872,7 @@ c ============================
       dx = (bse+bse)/anstp
       x = -bse
       xp(1) = -bse
-      timp(1) = tsd
+      timp(1) = self%continuous_source_duration
       wse = ws*bs*bs/(bse*bse)
       wss = ws
 
@@ -1161,7 +1161,7 @@ c ======================================
       xp(1) = 1.
       xccp(1) = 1.
       tccp(1) = 0.
-      timp(1) = tsd
+      timp(1) = self%continuous_source_duration
       wse = 0.
 
       vg = 0.
@@ -1344,7 +1344,7 @@ c ========================================
 
       tccp(i) = 2.*(xp(i)-1.)/u
       xccp(i) = xp(i)
-      if (tccp(i) .lt. tsd) then
+      if (tccp(i) .lt. self%continuous_source_duration) then
          qint = .5*self%mass_source_rate*tccp(i)
          qintp(i) = qint
          qint0 = qint
@@ -1354,7 +1354,7 @@ c ========================================
          qint0 = qint
          tim = tccp(i)
          timp(i) = tim
-         bbxp(i) = .5*u*tsd
+         bbxp(i) = .5*u*self%continuous_source_duration
          bxp(i) = .9999*bbxp(i)
          betaxp(i) = sqrt(bbxp(i)*bbxp(i)-bxp(i)*bxp(i))/sr3
       endif
@@ -1439,7 +1439,8 @@ c  go to nearfield region calculation
          idpf = 2
          nxi = msfm + 1
          rho0 = rho
-         r = .25*self%mass_source_rate*tsd/cm
+         r = .25*self%mass_source_rate
+     1     * self%continuous_source_duration/cm
          r0 = r
          rmi = 0.
          bbx = r/(rho*bb*h)
@@ -1604,7 +1605,9 @@ c ===============================================
           nxi = nx+1
           dt = dx/u
           rho0 = rho
-          r = .25*self%mass_source_rate*tsd/cm
+          r = .25 * self%mass_source_rate
+     1      * self%continuous_source_duration
+     1      / cm
           r0 = r
           rmi = 0.
           bbx = r/(rho*bb*h)
@@ -1808,7 +1811,7 @@ c ========================================
   730 do 775 nx=nxi,mffm
 
       do 765 ns=1,self%num_calculation_substeps
-      if (tim .lt. tsd) then
+      if (tim .lt. self%continuous_source_duration) then
          wss = ws
          xstr = h/cf0
         else
@@ -1919,7 +1922,7 @@ c   steady state calc of timp
          txb = txt + xptr
          bxr = (bxtr-bxs0)/(xptr-xcc0)
          do 925 i=1,itr
-         timp(i) = tsd*(xp(i)+txt)/txb
+         timp(i) = self%continuous_source_duration*(xp(i)+txt)/txb
          bbxp(i) = bxs0 + bxr*(xccp(i)-xcc0)
          bxp(i) = .9999*bbxp(i)
          betaxp(i) = sqrt(bbxp(i)*bbxp(i)-bxp(i)*bxp(i))/sr3
@@ -2035,7 +2038,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -2064,7 +2067,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2141,7 +2144,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -2170,7 +2173,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2191,7 +2194,7 @@ c
 
 c  mass and downwind cloud center equations
 
-      if(tim .ge. tsd) then
+      if(tim .ge. self%continuous_source_duration) then
           rqs = 0.
           wss = 0.
           atau = 0.
@@ -2274,7 +2277,7 @@ c  solves the steady state plume conservation equations
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -2303,7 +2306,7 @@ c  solves the steady state plume conservation equations
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2361,7 +2364,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -2390,7 +2393,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2453,7 +2456,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -2490,7 +2493,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2510,8 +2513,10 @@ c
 
 
       if(idpf .eq. 2) then
-        if(timn .gt. tsd) then
-            sqs = .25*self%mass_source_rate*tsd
+        if(timn .gt. self%continuous_source_duration) then
+            sqs = .25
+     1          * self%mass_source_rate
+     1          * self%continuous_source_duration
          else
             sqs = .25*self%mass_source_rate*timn
          endif
@@ -2779,7 +2784,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -2812,7 +2817,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3008,7 +3013,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -3039,7 +3044,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3167,7 +3172,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -3201,7 +3206,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3248,7 +3253,8 @@ c  vertical entrainment
       endif
       if (self%spill_type .eq. 4)  then
          if ((self%mass_source_rate*timn) .gt. qtcs)  then
-         ubs2 = ubsi2 + (ubs20-ubsi2)*exp((tsd-timn)*u/xstr)
+         ubs2 = ubsi2 + (ubs20-ubsi2)
+     1        * exp((self%continuous_source_duration-timn)*u/xstr)
          endif
       endif
       ubs = sqrt(ubs2)
@@ -3382,7 +3388,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -3409,7 +3415,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3476,7 +3482,7 @@ c  writes the input values used in the problem
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -3506,7 +3512,7 @@ c  writes the input values used in the problem
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3557,7 +3563,8 @@ c   release gas properties
 c   spill characteristics
 
       write (3,102) self%spill_type,self%mass_source_rate,
-     1              tsd,qtcs,qtis,as,ws,bs,hs,us
+     1              self%continuous_source_duration,
+     1              qtcs,qtis,as,ws,bs,hs,us
 
   102 format (//'spill characteristics'//,1p,
      1 ' spill type                              ',10x,'- idspl=',i12/
@@ -3641,7 +3648,7 @@ c  writes the instantaneous spatially averaged cloud properties
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -3671,7 +3678,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3731,7 +3738,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -3768,7 +3775,7 @@ c  calculates and writes the time averaged volume concentration
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,qtcs,qtis,hs,us,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3798,11 +3805,12 @@ c   betap(i) = half width parameter beta
 c   betacp(i) = effective beta with meander
 
       tcmx = 2.*bbxp(61)/up(61)
-      tcld(61) = amax1(tcmx,tsd)
+      tcld(61) = amax1(tcmx,self%continuous_source_duration)
       do 10 i=2,60
       in = 62-i
       tcmx = 2.*bbxp(in)/up(in)
-      tcld(in) = amax1(tsd,amin1(tcld(in+1),tcmx))
+      tcld(in) = amax1(self%continuous_source_duration,
+     1                 amin1(tcld(in+1),tcmx))
    10 continue
       tcld(1) = tcld(2)
 
@@ -3858,7 +3866,7 @@ c   betacp(i) = effective beta with meander
       endif
 
       if (i .lt. nxtr) then
-          cvbrx = amin1(tsd/tav,1.0)
+          cvbrx = amin1(self%mass_source_rate/tav,1.0)
           fcx(i) = facss*bbp(i)*hdsig*cvbrx*cvp(i)/bp(i)
         else
           epx1 = (bxp(i) + .5*up(i)*tav)/(sr2*betaxp(i))
