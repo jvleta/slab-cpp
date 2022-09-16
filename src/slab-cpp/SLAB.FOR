@@ -148,7 +148,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -196,7 +196,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -591,7 +591,7 @@ c ====================================
 c ==========================
 c  evaporating pool release
 c ==========================
-      ws = self%mass_source_rate
+      self%vertical_vapor_velocity = self%mass_source_rate
      1   / (self%source_gas_density*self%source_area)
       bse = bs
       self%instantaneous_source_mass = 0.
@@ -634,7 +634,7 @@ c ========================
          bb = h*bb/hmx
          h = hmx
       endif
-      ws = 0.
+      self%vertical_vapor_velocity = 0.
       self%instantaneous_source_mass = 0.
       tp(1) = t0
       cm0 = 1.
@@ -677,7 +677,7 @@ c ======================
       rho = self%ambient_air_density*ta/(alfm*t0+betm*ta)
       rho0 = rho
 
-      ws = self%mass_source_rate/(rho*self%source_area)
+      self%vertical_vapor_velocity = self%mass_source_rate/(rho*self%source_area)
       self%horizontal_vapor_velocity = 0.
       bse = 1.
       self%instantaneous_source_mass = 0.
@@ -692,8 +692,8 @@ c  plume rise calculation
       if (self%source_height .lt. 1.0) hsu = 1.0
       uahs = (uastr/xk)*uafn(hsu,z0,ala0,zl,hmx,zt,cu1,cu2)
 
-      betu = .4 + 1.2*uahs/ws
-      hprm = 1.0363*ws*bs/(betu*sqrt(uahs*uastr))
+      betu = .4 + 1.2*uahs/self%vertical_vapor_velocity
+      hprm = 1.0363*self%vertical_vapor_velocity*bs/(betu*sqrt(uahs*uastr))
       h67 = hprm**.85714
       do 155 i=1,3
       hprt = h67*((self%source_height+hprm)**.14286)
@@ -705,10 +705,10 @@ c  dense gas, momentum, or buoyant jet
 
 c  dense gas jet plume rise
          ds = 4.0*bs/srpi
-         fr2 = ws*ws/(self%gravitational_constant
+         fr2 = self%vertical_vapor_velocity*self%vertical_vapor_velocity/(self%gravitational_constant
      1 *ds*(rho-self%ambient_air_density)/self%ambient_air_density)
          sgs = rho/self%ambient_air_density
-         rwus = ws/uahs
+         rwus = self%vertical_vapor_velocity/uahs
          hprd = 1.32*ds*((rwus*sgs*fr2)**.3333)
          hpr = hprm*hprd/sqrt(hprd*hprd+hprm*hprm)
          if ((self%source_height+hpr) .gt. hmx) hpr=hmx-self%source_height
@@ -735,7 +735,7 @@ c  dense gas jet plume rise
 
 c  momentum or buoyant jet plume rise
          hprb = 1.7254*self%gravitational_constant
-     1     *(self%ambient_air_density-rho)*ws*bs*bs/
+     1     *(self%ambient_air_density-rho)*self%vertical_vapor_velocity*bs*bs/
      1     (self%ambient_air_density*uahs*uastr*uastr)
          h35 = hprb**.6
          do 160 i=1,3
@@ -746,7 +746,7 @@ c  momentum or buoyant jet plume rise
          self%source_height = self%source_height+hpr
          if (self%source_height .gt. (hmx-bs))  self%source_height = hmx-bs
          self%horizontal_vapor_velocity = (uastr/xk)*uafn(self%source_height,z0,ala0,zl,hmx,zt,cu1,cu2)
-         ws = 0.
+         self%vertical_vapor_velocity = 0.
          rho = self%ambient_air_density
          self%source_gas_density = self%ambient_air_density
          self%source_area = self%mass_source_rate/(rho*self%horizontal_vapor_velocity)
@@ -808,7 +808,7 @@ c  go to plume rise interpolation
 c ==========================================================
 c  instantaneous of short duration evaporating pool release
 c ==========================================================
-      ws = self%mass_source_rate/(self%source_gas_density*self%source_area)
+      self%vertical_vapor_velocity = self%mass_source_rate/(self%source_gas_density*self%source_area)
       bse = bs
 
       t0 = self%source_gas_temperature
@@ -871,8 +871,8 @@ c ============================
       x = -bse
       xp(1) = -bse
       timp(1) = self%continuous_source_duration
-      wse = ws*bs*bs/(bse*bse)
-      wss = ws
+      wse = self%vertical_vapor_velocity*bs*bs/(bse*bse)
+      wss = self%vertical_vapor_velocity
 
       vg = 0.
       vg0 = 0.
@@ -1317,10 +1317,10 @@ c ========================================
 
       rho0 = rho
       t0 = t
-      if (ws .gt. u) then
+      if (self%vertical_vapor_velocity .gt. u) then
          hs0 = bs+bs
         else
-         hs0 = (bs+bs)*ws/u
+         hs0 = (bs+bs)*self%vertical_vapor_velocity/u
       endif
 
       do 510 i=1,msfm
@@ -1330,7 +1330,7 @@ c ========================================
       xir = (xp(i)-1.)/xpr
       xiz = (xp(i)-1.-xpr)/xpr
       up(i) = u*sqrt(xir)
-      wcp(i) = ws*(u-up(i))/u
+      wcp(i) = self%vertical_vapor_velocity*(u-up(i))/u
 
       hp(i) = hs0 + (h-hs0)*xir
       zcp(i) = self%source_height+hpr*sqrt(1.-xiz*xiz)
@@ -1680,7 +1680,7 @@ c ================
       x = 0.
       xp(1) = 0.
       timp(1) = 0.
-      wse = ws
+      wse = self%vertical_vapor_velocity
 
       vg = 0.
       vg0 = 0.
@@ -1810,7 +1810,7 @@ c ========================================
 
       do 765 ns=1,self%num_calculation_substeps
       if (tim .lt. self%continuous_source_duration) then
-         wss = ws
+         wss = self%vertical_vapor_velocity
          xstr = h/cf0
         else
          wss = 0.
@@ -2029,7 +2029,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2056,7 +2056,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2134,7 +2134,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2159,7 +2159,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2194,7 +2194,7 @@ c  mass and downwind cloud center equations
           atau = 0.
         else
           rqs =.25*self%mass_source_rate
-          wss = ws
+          wss = self%vertical_vapor_velocity
           if (r .gt. 0.) then
              atau = rqs/r
             else
@@ -2264,7 +2264,7 @@ c  solves the steady state plume conservation equations
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2292,7 +2292,7 @@ c  solves the steady state plume conservation equations
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2351,7 +2351,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2379,7 +2379,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2443,7 +2443,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2479,7 +2479,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2771,7 +2771,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2803,7 +2803,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3000,7 +3000,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3030,7 +3030,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3159,7 +3159,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3192,7 +3192,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3376,7 +3376,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3402,7 +3402,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3470,7 +3470,7 @@ c  writes the input values used in the problem
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3499,7 +3499,7 @@ c  writes the input values used in the problem
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3563,7 +3563,7 @@ c   spill characteristics
      1              self%continuous_source_mass,
      1              self%instantaneous_source_mass,
      1              self%source_area,
-     1              ws,
+     1              self%vertical_vapor_velocity,
      1              bs,
      1              self%source_height,
      1              self%horizontal_vapor_velocity
@@ -3643,7 +3643,7 @@ c  writes the instantaneous spatially averaged cloud properties
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3671,7 +3671,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3733,7 +3733,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,ws,hrf,urf
+      real(4) :: wma,cpa,pa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3768,7 +3768,7 @@ c  calculates and writes the time averaged volume concentration
       common sr3,third,f227,dbt,utst,wse,bs,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,ws,hrf,urf
+      common wma,cpa,pa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
