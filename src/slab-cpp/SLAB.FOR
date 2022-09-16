@@ -145,7 +145,7 @@ c
       use slab_data, only: SlabData
       type(SlabData) :: self
       integer :: nx,keval,nzpm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -193,7 +193,7 @@ c
       real(4) :: rbs,rhof2,rpwa,uaz2,uf,zcmx
       integer :: i,ijt,jtr,itr,j,k,ngam,ns,nstp,nxi
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -512,11 +512,11 @@ c  calculate ambient meteorological values
 
       ala0 = ala*(1.+z/zl)
       hmx = 130.*(2.**(3.-stb))
-      bs = .5*sqrt(self%source_area)
+      self%source_half_width = .5*sqrt(self%source_area)
 
 c  check if source below mixing layer height
-      if (self%source_height .gt. (hmx-bs)) then
-         write (3,140) self%source_height,hmx,bs
+      if (self%source_height .gt. (hmx-self%source_half_width)) then
+         write (3,140) self%source_height,hmx,self%source_half_width
   140   format ('input source height hs is greater than the',/,
      1   ' calculated mixing layer height hmx minus ',/,
      1   'the stack half width bs.  program terminated.',/,1p,
@@ -593,7 +593,7 @@ c  evaporating pool release
 c ==========================
       self%vertical_vapor_velocity = self%mass_source_rate
      1   / (self%source_gas_density*self%source_area)
-      bse = bs
+      bse = self%source_half_width
       self%instantaneous_source_mass = 0.
       self%source_height = 0.
       self%horizontal_vapor_velocity = 0.
@@ -618,7 +618,7 @@ c ========================
 
       self%horizontal_vapor_velocity = self%mass_source_rate/(rho*self%source_area)
       alfg = 0.
-      bb = bs
+      bb = self%source_half_width
       h = bb+bb
       hh = .5*h
       htp = self%source_height+hh
@@ -693,7 +693,7 @@ c  plume rise calculation
       uahs = (uastr/xk)*uafn(hsu,z0,ala0,zl,hmx,zt,cu1,cu2)
 
       betu = .4 + 1.2*uahs/self%vertical_vapor_velocity
-      hprm = 1.0363*self%vertical_vapor_velocity*bs/(betu*sqrt(uahs*uastr))
+      hprm = 1.0363*self%vertical_vapor_velocity*self%source_half_width/(betu*sqrt(uahs*uastr))
       h67 = hprm**.85714
       do 155 i=1,3
       hprt = h67*((self%source_height+hprm)**.14286)
@@ -704,7 +704,7 @@ c  dense gas, momentum, or buoyant jet
       if (rho .gt. self%ambient_air_density) then
 
 c  dense gas jet plume rise
-         ds = 4.0*bs/srpi
+         ds = 4.0*self%source_half_width/srpi
          fr2 = self%vertical_vapor_velocity*self%vertical_vapor_velocity/(self%gravitational_constant
      1 *ds*(rho-self%ambient_air_density)/self%ambient_air_density)
          sgs = rho/self%ambient_air_density
@@ -735,7 +735,7 @@ c  dense gas jet plume rise
 
 c  momentum or buoyant jet plume rise
          hprb = 1.7254*self%gravitational_constant
-     1     *(self%ambient_air_density-rho)*self%vertical_vapor_velocity*bs*bs/
+     1     *(self%ambient_air_density-rho)*self%vertical_vapor_velocity*self%source_half_width*self%source_half_width/
      1     (self%ambient_air_density*uahs*uastr*uastr)
          h35 = hprb**.6
          do 160 i=1,3
@@ -744,7 +744,7 @@ c  momentum or buoyant jet plume rise
   160    continue
          hpr = sqrt(hprb*hprb+hprm*hprm)
          self%source_height = self%source_height+hpr
-         if (self%source_height .gt. (hmx-bs))  self%source_height = hmx-bs
+         if (self%source_height .gt. (hmx-self%source_half_width))  self%source_height = hmx-self%source_half_width
          self%horizontal_vapor_velocity = (uastr/xk)*uafn(self%source_height,z0,ala0,zl,hmx,zt,cu1,cu2)
          self%vertical_vapor_velocity = 0.
          rho = self%ambient_air_density
@@ -752,7 +752,7 @@ c  momentum or buoyant jet plume rise
          self%source_area = self%mass_source_rate/(rho*self%horizontal_vapor_velocity)
          alfg = 0.
          bb = .5*sqrt(self%source_area)
-         if (bb .lt. bs) bb = bs
+         if (bb .lt. self%source_half_width) bb = self%source_half_width
          h = self%source_area/(bb+bb)
          hh = .5*h
          htp = self%source_height+hh
@@ -809,7 +809,7 @@ c ==========================================================
 c  instantaneous of short duration evaporating pool release
 c ==========================================================
       self%vertical_vapor_velocity = self%mass_source_rate/(self%source_gas_density*self%source_area)
-      bse = bs
+      bse = self%source_half_width
 
       t0 = self%source_gas_temperature
       tp(1) = t0
@@ -871,7 +871,7 @@ c ============================
       x = -bse
       xp(1) = -bse
       timp(1) = self%continuous_source_duration
-      wse = self%vertical_vapor_velocity*bs*bs/(bse*bse)
+      wse = self%vertical_vapor_velocity*self%source_half_width*self%source_half_width/(bse*bse)
       wss = self%vertical_vapor_velocity
 
       vg = 0.
@@ -1263,7 +1263,7 @@ c ========================================
 c  vertical jet plume rise interpolations
 c ========================================
 
-  500 msfm = 2.0 + xpr/(bs+bs)
+  500 msfm = 2.0 + xpr/(self%source_half_width+self%source_half_width)
       msfm = min0(msfm,11)
       amsfm = msfm
       dxpr = xpr/(amsfm-1.)
@@ -1271,7 +1271,7 @@ c ========================================
       zcr = self%source_height+hpr
       uab = (uastr/xk)*uafn(zcr,z0,ala0,zl,hmx,zt,cu1,cu2)
       uab0 = uab
-      cfpr = 3.*(2.+(xpr/bs))*cf1
+      cfpr = 3.*(2.+(xpr/self%source_half_width))*cf1
       cmpr = sqrt((1.-cm)*(1.-cm) + 4.*cm*cfpr)
       cupr = .5*uab/(1.-cfpr)
       u = cupr * (1.-cm-cfpr-cfpr+cmpr)
@@ -1279,11 +1279,11 @@ c ========================================
 
       ar = self%mass_source_rate/(rho*u*cm)
       am = self%mass_source_rate/(rho*u)
-      hft = 2.4 + 1.6/(1.+(xpr*xpr)/(100.*bs*bs))
+      hft = 2.4 + 1.6/(1.+(xpr*xpr)/(100.*self%source_half_width*self%source_half_width))
       bb = sqrt(ar/hft)
-      if (bb .lt. bs)  bb = bs
+      if (bb .lt. self%source_half_width)  bb = self%source_half_width
       b = .9*sqrt(am/hft)
-      bsm = .9*bs
+      bsm = .9*self%source_half_width
       if (b .lt. bsm)  b = bsm
       h = ar/(bb+bb)
       hh = .5*h
@@ -1318,9 +1318,9 @@ c ========================================
       rho0 = rho
       t0 = t
       if (self%vertical_vapor_velocity .gt. u) then
-         hs0 = bs+bs
+         hs0 = self%source_half_width+self%source_half_width
         else
-         hs0 = (bs+bs)*self%vertical_vapor_velocity/u
+         hs0 = (self%source_half_width+self%source_half_width)*self%vertical_vapor_velocity/u
       endif
 
       do 510 i=1,msfm
@@ -1336,7 +1336,7 @@ c ========================================
       zcp(i) = self%source_height+hpr*sqrt(1.-xiz*xiz)
       zcmx = hmx-.5*hp(i)
       if (zcp(i) .gt. zcmx) zcp(i) = zcmx
-      bbp(i) = bs + (bb-bs)*xir
+      bbp(i) = self%source_half_width + (bb-self%source_half_width)*xir
       bp(i) = bsm + (b-bsm)*xir
       betap(i) = sqrt(bbp(i)*bbp(i)-bp(i)*bp(i))/sr3
 
@@ -1703,22 +1703,22 @@ c ================
       fw = 0.
       fug = 0.
 
-      bb = bs
+      bb = self%source_half_width
       bb0 = bb
       bbp(1) = bb
       bbv = bb
       bbv0 = bb
-      b = .9*bs
+      b = .9*self%source_half_width
       b0 = b
       bp(1) = b
-      bv = .9*bs
+      bv = .9*self%source_half_width
       bv0 = bv
-      bbx = bs
+      bbx = self%source_half_width
       bbx0 = bbx
       bbxp(1) = bbx
       bbvx = bbx
       bbvx0 = bbx
-      bx = .9*bs
+      bx = .9*self%source_half_width
       bx0 = bx
       bxp(1) = bx
       bvx = bx
@@ -2026,7 +2026,7 @@ c  calculates the gradients used in the steady state plume conservation
 c   equations
 c
       integer :: nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -2053,7 +2053,7 @@ c
       ! local variables
       real(4) :: rqs,vhwb
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -2131,7 +2131,7 @@ c  calculates the gradients used in the transient puff convervation
 c    equations
 c
       integer :: nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -2156,7 +2156,7 @@ c
       ! local variables
       real(4) :: atau,fgrv,rqs,vhwb
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -2261,7 +2261,7 @@ c  center height equation
       type(SlabData) :: self
 c  solves the steady state plume conservation equations
       integer :: nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -2289,7 +2289,7 @@ c  solves the steady state plume conservation equations
       ! local variables
       real(4) :: zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -2348,7 +2348,7 @@ c
 c  solves the transient puff conservation equations
 c
       integer :: nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -2376,7 +2376,7 @@ c
       ! local variables
       real(4) :: zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -2440,7 +2440,7 @@ c
 c  calculates the thermodynamic properties
 c
       integer :: nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -2476,7 +2476,7 @@ c
       
       integer :: i,icyc,ie,irep,iw
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -2768,7 +2768,7 @@ c
 c  calculates the steady state plume velocities and height
 c
       integer :: nx,keval
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -2800,7 +2800,7 @@ c
      1           u1,u12,u2,ut0,ut2,utg3,zcmx,sfue
       integer :: i
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -2997,7 +2997,7 @@ c
 c  calculates the transient puff velocities and height
 c
       integer :: nx,keval
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -3027,7 +3027,7 @@ c
       real(4) :: eu,ev,ew,gex,gey,hhf,htph,rbxy,rex,rey,sfue
       real(4) :: u1,u12,u2,zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -3156,7 +3156,7 @@ c
 c  calculates the entrainment rates and surface fluxes
 c
       integer :: nx,keval
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -3189,7 +3189,7 @@ c
       real(4) :: vmgs,vmhs2,vrho,vxs,wmhs2,zrf,vjp,tgt,ubar,ugmgs,umgs
       real(4) :: umhs2
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -3373,7 +3373,7 @@ c
 c  stores the output variables
 c
       integer :: nx,keval
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -3399,7 +3399,7 @@ c
       real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
       
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -3467,7 +3467,7 @@ c
       type(SlabData) :: self
 c  writes the input values used in the problem
       integer :: nx,keval
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -3496,7 +3496,7 @@ c  writes the input values used in the problem
       ! Local variables
       integer :: i
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -3564,7 +3564,7 @@ c   spill characteristics
      1              self%instantaneous_source_mass,
      1              self%source_area,
      1              self%vertical_vapor_velocity,
-     1              bs,
+     1              self%source_half_width,
      1              self%source_height,
      1              self%horizontal_vapor_velocity
 
@@ -3640,7 +3640,7 @@ c   additional parameters
       type(SlabData) :: self
 c  writes the instantaneous spatially averaged cloud properties
       integer :: nx
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -3668,7 +3668,7 @@ c  writes the instantaneous spatially averaged cloud properties
       ! Local variables
       integer :: i
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
@@ -3730,7 +3730,7 @@ c  writes the instantaneous spatially averaged cloud properties
       type(SlabData) :: self
 c  calculates and writes the time averaged volume concentration
       integer :: nx,keval,nzpm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       real(4) :: wma,cpa,pa,hrf,urf
@@ -3765,7 +3765,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: afata,ak,asig,betac2
       integer :: i,ii,in,j,k,nzpm1
       
-      common sr3,third,f227,dbt,utst,wse,bs,bse
+      common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
       common wma,cpa,pa,hrf,urf
