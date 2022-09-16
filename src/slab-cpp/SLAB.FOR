@@ -166,7 +166,7 @@ c
      1           xffm,tav,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1           dhw,cmdaa,cmwa,spaw,spbw,t0,
      1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr,msfm,mnfm,mffm
@@ -218,7 +218,7 @@ c
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -429,7 +429,7 @@ c  atmospheric and physical constants
       rpwa = .01*rh*exp(spaw-spbw/ta)
       cmwa = wmw*rpwa/(wma+(wmw-wma)*rpwa)
       cmdaa = 1.-cmwa
-      cpaa = cmdaa*cpa + cmwa*cpwv
+      self%ambient_air_heat_capacity = cmdaa*cpa + cmwa*cpwv
       self%ambient_air_molecular_weight = wma*wmw/(wmw+(wma-wmw)*cmwa)
 
 c  number of integration steps
@@ -923,7 +923,7 @@ c ============================
       cmevp(1) = cmev0
       cmdap(1) = cmdaa
 
-      cp0 = cpaa
+      cp0 = self%ambient_air_heat_capacity
       t0 = ta
       tp(1) = ta
 
@@ -2046,7 +2046,7 @@ c
       real(4) :: za,ta,ua,z0,nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2149,7 +2149,7 @@ c
       real(4) :: za,ta,ua,z0,nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2181,7 +2181,7 @@ c
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2282,7 +2282,7 @@ c  solves the steady state plume conservation equations
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2314,7 +2314,7 @@ c  solves the steady state plume conservation equations
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2369,7 +2369,7 @@ c
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2401,7 +2401,7 @@ c
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2461,7 +2461,7 @@ c
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2501,7 +2501,7 @@ c
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2551,11 +2551,11 @@ c
          sfte = -cp0*(t0-ta)*abs(sft)/(abs(sft) + r0*cp0*abs(t0-ta))
       endif
 
-      etrn = (1.-cm)*cpaa*ta 
+      etrn = (1.-cm)*self%ambient_air_heat_capacity*ta 
      1     + cm*self%vapor_heat_capacity
      1     * self%source_gas_temperature
      1 + (r0/r)*(cp0*t0-(1.-cm0)
-     1 *cpaa*ta-cm0*self%vapor_heat_capacity
+     1 *self%ambient_air_heat_capacity*ta-cm0*self%vapor_heat_capacity
      1 *self%source_gas_temperature + sfte)
 
       t = etrn/cp
@@ -2789,7 +2789,7 @@ c
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -2825,7 +2825,7 @@ c
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -3018,7 +3018,7 @@ c
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
@@ -3052,7 +3052,7 @@ c
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -3177,7 +3177,7 @@ c
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
@@ -3214,7 +3214,7 @@ c
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -3394,7 +3394,7 @@ c
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
@@ -3424,7 +3424,7 @@ c
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -3488,7 +3488,7 @@ c  writes the input values used in the problem
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
-      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
       real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
@@ -3521,7 +3521,7 @@ c  writes the input values used in the problem
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -3595,7 +3595,8 @@ c   field parameters
 
 c   ambient meteorological variables
 
-      write (3,104) self%ambient_air_molecular_weight,cpaa,
+      write (3,104) self%ambient_air_molecular_weight,
+     1              self%ambient_air_heat_capacity,
      1              self%ambient_air_density,
      1              za,pa,ua,ta,rh,uastr,stab,ala,z0
 
@@ -3661,7 +3662,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0,
      1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       
@@ -3694,7 +3695,7 @@ c  writes the instantaneous spatially averaged cloud properties
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
@@ -3751,7 +3752,7 @@ c  calculates and writes the time averaged volume concentration
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1           dhw,cmdaa,cmwa,spaw,spbw,t0,
      1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
@@ -3790,7 +3791,7 @@ c  calculates and writes the time averaged volume concentration
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
      1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 

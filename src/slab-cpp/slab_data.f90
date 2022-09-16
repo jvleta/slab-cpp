@@ -34,7 +34,7 @@ type SlabData
   
   ! Ambient Meteorological Properties
   real(4) :: ambient_air_molecular_weight
-  ! real(4) :: ambient_air_heat_capacity
+  real(4) :: ambient_air_heat_capacity
   real(4) :: ambient_air_density
   ! real(4) :: ambient_measurement_height
   ! real(4) :: ambient_atmospheric_pressure
