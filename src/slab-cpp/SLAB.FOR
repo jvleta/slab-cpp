@@ -155,7 +155,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -204,7 +204,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -596,7 +596,7 @@ c ==========================
       bse = bs
       self%instantaneous_source_mass = 0.
       self%source_height = 0.
-      us = 0.
+      self%horizontal_vapor_velocity = 0.
       zc = 0.
       zc0 = 0.
       zcp(1) = 0.
@@ -616,7 +616,7 @@ c ========================
       betm = (self%ambient_air_density/self%source_liquid_density)*cmed
       rho = self%ambient_air_density*ta/(alfm*t0+betm*ta)
 
-      us = self%mass_source_rate/(rho*self%source_area)
+      self%horizontal_vapor_velocity = self%mass_source_rate/(rho*self%source_area)
       alfg = 0.
       bb = bs
       h = bb+bb
@@ -678,7 +678,7 @@ c ======================
       rho0 = rho
 
       ws = self%mass_source_rate/(rho*self%source_area)
-      us = 0.
+      self%horizontal_vapor_velocity = 0.
       bse = 1.
       self%instantaneous_source_mass = 0.
       xcc0 = 1.
@@ -745,11 +745,11 @@ c  momentum or buoyant jet plume rise
          hpr = sqrt(hprb*hprb+hprm*hprm)
          self%source_height = self%source_height+hpr
          if (self%source_height .gt. (hmx-bs))  self%source_height = hmx-bs
-         us = (uastr/xk)*uafn(self%source_height,z0,ala0,zl,hmx,zt,cu1,cu2)
+         self%horizontal_vapor_velocity = (uastr/xk)*uafn(self%source_height,z0,ala0,zl,hmx,zt,cu1,cu2)
          ws = 0.
          rho = self%ambient_air_density
          self%source_gas_density = self%ambient_air_density
-         self%source_area = self%mass_source_rate/(rho*us)
+         self%source_area = self%mass_source_rate/(rho*self%horizontal_vapor_velocity)
          alfg = 0.
          bb = .5*sqrt(self%source_area)
          if (bb .lt. bs) bb = bs
@@ -833,7 +833,7 @@ c ==========================================================
       rhop(1) = rho
 
       self%source_height = self%instantaneous_source_mass/(rho*self%source_area)
-      us = 0.
+      self%horizontal_vapor_velocity = 0.
       zc = 0.
       zc0 = 0.
       zcp(1) = 0.
@@ -1214,7 +1214,7 @@ c ======================================
       uab0 = uab
       uap(1) = uab
 
-      u = us
+      u = self%horizontal_vapor_velocity
       u0 = u
       up(1) = u
 
@@ -1223,12 +1223,12 @@ c ======================================
      1 *(rho-self%ambient_air_density)*bb*h*h
       sru0 = r0*u + srug
 
-      delu = (self%ambient_air_density/rho)*abs(uab-us)
+      delu = (self%ambient_air_density/rho)*abs(uab-self%horizontal_vapor_velocity)
       if (htp .gt. h)  then
          ubs20 = uastr2
          ustr2 = uastr2 + cf1*delu*delu
         else
-         umgs = (uastr/uab)*us
+         umgs = (uastr/uab)*self%horizontal_vapor_velocity
          ubs20 = umgs*umgs
          ustr2 = ubs20 + cf1*delu*delu
       endif
@@ -2036,7 +2036,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -2064,7 +2064,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2141,7 +2141,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,rhop,cmp,tp,cvp,betap,xp,cmwvp
@@ -2167,7 +2167,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2271,7 +2271,7 @@ c  solves the steady state plume conservation equations
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -2300,7 +2300,7 @@ c  solves the steady state plume conservation equations
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2358,7 +2358,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -2387,7 +2387,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2450,7 +2450,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -2487,7 +2487,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -2778,7 +2778,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -2811,7 +2811,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3007,7 +3007,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -3038,7 +3038,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3166,7 +3166,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -3200,7 +3200,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3383,7 +3383,7 @@ c
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -3410,7 +3410,7 @@ c
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3477,7 +3477,7 @@ c  writes the input values used in the problem
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp
@@ -3507,7 +3507,7 @@ c  writes the input values used in the problem
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3566,7 +3566,7 @@ c   spill characteristics
      1              ws,
      1              bs,
      1              self%source_height,
-     1              us
+     1              self%horizontal_vapor_velocity
 
   102 format (//'spill characteristics'//,1p,
      1 ' spill type                              ',10x,'- idspl=',i12/
@@ -3650,7 +3650,7 @@ c  writes the instantaneous spatially averaged cloud properties
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -3680,7 +3680,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3740,7 +3740,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,stab,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
@@ -3776,7 +3776,7 @@ c  calculates and writes the time averaged volume concentration
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,stab,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
       common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
@@ -3837,7 +3837,7 @@ c   betacp(i) = effective beta with meander
       rjt = 1.
       if (self%spill_type .eq. 2)  then
          rm3 = ((self%ambient_air_density*uap(i)*(1.-cmp(i))) / 
-     1  (self%source_gas_density*us*cmp(i)))**(1./3.)
+     1  (self%source_gas_density*self%horizontal_vapor_velocity*cmp(i)))**(1./3.)
          rlg = log((1.-rm3+(rm3*rm3))/((1.+rm3)*(1.+rm3)))
          rit = atan(((2.*rm3)-1.)/sr3) + atan(1./sr3)
          if (rm3 .lt. .1)  then

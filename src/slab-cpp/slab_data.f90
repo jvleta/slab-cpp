@@ -26,10 +26,10 @@ type SlabData
   ! real(4) :: vertical_vapor_velocity
   ! real(4) :: source_half_weight
   real(4) :: source_height
-  ! real(4) :: horizontal_vapor_velocity
+  real(4) :: horizontal_vapor_velocity
   
   ! Field Parameters
-  ! real(4) :: concentration_averaging_time
+  real(4) :: concentration_averaging_time
   real(4) :: concentration_measurement_height(4)
   
   ! Ambient Meteorological Properties
