@@ -176,7 +176,7 @@ c
       real(4) :: rlg,rm3,rit,rjt,rav,rav2,htpp,hdsig,hhf
       real(4) :: gzi,gzip,facd,facn,erfy2,erfy1,ezi,erfx1
       real(4) :: erfx2,erfcy1,erfcy2,erfcx1,erfcx2
-      real(4) :: epy1,epy2,epx1,epx2,cpwl,cvbrx,cc1
+      real(4) :: epy1,epy2,epx1,epx2,cvbrx,cc1
       real(4) :: afata,ak,asig,betac2,aal,al,al1  ! maybe delete cpsl here
       real(4) :: al2,al3,alfm,alm,am,amsfm,angam,anstp
       real(4) :: astb,at0,atot,betm,betu,bmax,bmin,bsen
@@ -190,7 +190,7 @@ c
       real(4) :: vjp,xcc0,xir,xiz,xpr,xptr,z,zcr,z1,z2
       real(4) :: fhh,fhz,fr2,gam,gmd,gu,h1,h2,h35,h67,he
       real(4) :: hft,hh,hpr,hprb,hprd,hprm,pi,rab,ral
-      real(4) :: rbs,rhof2,rpwa,uaz2,uf,zcmx,dhw
+      real(4) :: rbs,rhof2,rpwa,uaz2,uf,zcmx
       integer :: i,ijt,jtr,itr,j,k,ngam,ns,nstp,nxi
 
       common sr3,third,f227,dbt,utst,wse,bs,bse
@@ -766,15 +766,12 @@ c  momentum or buoyant jet plume rise
             bb = h*bb/hmx
             h = hmx
          endif
-         self%source_gas_temperature = (self%source_gas_molecular_weight
-     1   /wmae)*ta
+         self%source_gas_temperature = (self%source_gas_molecular_weight / wmae) * ta
          t0 = self%source_gas_temperature
          tp(1) = t0
-         self%boiling_point_temperature = .99
-     1       *amin1(self%source_gas_temperature,ta)
+         self%boiling_point_temperature = .99 * amin1(self%source_gas_temperature, ta)
          self%press_sat_const_a = self%press_sat_const_b 
-     1       / (self%boiling_point_temperature 
-     1        + self%press_sat_const_c)
+     1       / (self%boiling_point_temperature + self%press_sat_const_c)
          spaw = spbw/self%boiling_point_temperature
          cm0 = 1.
          cmp(1) = cm0
@@ -3761,7 +3758,6 @@ c  calculates and writes the time averaged volume concentration
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1           dhw,cmdaa,cmwa,spaw,spbw,t0,
      1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
-      real(4) :: dhw
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3769,7 +3765,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: rlg,rm3,rit,rjt,rav,rav2,htpp,hdsig,hhf
       real(4) :: gzi,gzip,facd,facn,erfy2,erfy1,ezi,erfx1
       real(4) :: erfx2,erfcy1,erfcy2,erfcx1,erfcx2
-      real(4) :: epy1,epy2,epx1,epx2,cpwl,cvbrx,cc1
+      real(4) :: epy1,epy2,epx1,epx2,cvbrx,cc1
       real(4) :: afata,ak,asig,betac2
       integer :: i,ii,in,j,k,nzpm1
       
