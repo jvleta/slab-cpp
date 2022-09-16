@@ -25,7 +25,7 @@ type SlabData
   real(4) :: source_area
   ! real(4) :: vertical_vapor_velocity
   ! real(4) :: source_half_weight
-  ! real(4) :: source_height
+  real(4) :: source_height
   ! real(4) :: horizontal_vapor_velocity
   
   ! Field Parameters
