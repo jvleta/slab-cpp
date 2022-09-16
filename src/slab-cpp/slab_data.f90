@@ -33,7 +33,7 @@ type SlabData
   real(4) :: concentration_measurement_height(4)
   
   ! Ambient Meteorological Properties
-  ! real(4) :: ambient_air_molecular_properties
+  real(4) :: ambient_air_molecular_weight
   ! real(4) :: ambient_air_heat_capacity
   real(4) :: ambient_air_density
   ! real(4) :: ambient_measurement_height

@@ -168,7 +168,7 @@ c
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1           dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr,msfm,mnfm,mffm
 
       ! Local variables
@@ -220,7 +220,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 c  constants for calculating stability regions
 
@@ -430,7 +430,7 @@ c  atmospheric and physical constants
       cmwa = wmw*rpwa/(wma+(wmw-wma)*rpwa)
       cmdaa = 1.-cmwa
       cpaa = cmdaa*cpa + cmwa*cpwv
-      wmae = wma*wmw/(wmw+(wma-wmw)*cmwa)
+      self%ambient_air_molecular_weight = wma*wmw/(wmw+(wma-wmw)*cmwa)
 
 c  number of integration steps
 
@@ -492,7 +492,7 @@ c   ====================
 
 c  calculate ambient meteorological values
 
-      self%ambient_air_density = wmae*pa/(self%gas_constant*ta)
+      self%ambient_air_density = self%ambient_air_molecular_weight*pa/(self%gas_constant*ta)
 
       tau0 = 10.
       at0 = 0.
@@ -612,7 +612,7 @@ c  horizontal jet release
 c ========================
       t0 = self%source_gas_temperature
       cmev0 = 1.-cmed
-      alfm = (wmae/self%source_gas_molecular_weight)*cmev0
+      alfm = (self%ambient_air_molecular_weight/self%source_gas_molecular_weight)*cmev0
       betm = (self%ambient_air_density/self%source_liquid_density)*cmed
       rho = self%ambient_air_density*ta/(alfm*t0+betm*ta)
 
@@ -672,7 +672,7 @@ c ======================
 
       t0 = self%source_gas_temperature
       cmev0 = 1.-cmed
-      alfm = (wmae/self%source_gas_molecular_weight)*cmev0
+      alfm = (self%ambient_air_molecular_weight/self%source_gas_molecular_weight)*cmev0
       betm = (self%ambient_air_density/self%source_liquid_density)*cmed
       rho = self%ambient_air_density*ta/(alfm*t0+betm*ta)
       rho0 = rho
@@ -717,8 +717,8 @@ c  dense gas jet plume rise
          if (cvpk .gt. .99) cvpk = .99
          cv = (.5236*(1.-cvpk) + cvpk)*cvpk
          cm = self%source_gas_molecular_weight
-     1      *cv/(wmae+(self%source_gas_molecular_weight
-     1      -wmae)*cv)
+     1      *cv/(self%ambient_air_molecular_weight+(self%source_gas_molecular_weight
+     1      -self%ambient_air_molecular_weight)*cv)
          r0 = .5*self%mass_source_rate
          r = r0/cm
          cm0 = 1.
@@ -766,7 +766,7 @@ c  momentum or buoyant jet plume rise
             bb = h*bb/hmx
             h = hmx
          endif
-         self%source_gas_temperature = (self%source_gas_molecular_weight / wmae) * ta
+         self%source_gas_temperature = (self%source_gas_molecular_weight / self%ambient_air_molecular_weight) * ta
          t0 = self%source_gas_temperature
          tp(1) = t0
          self%boiling_point_temperature = .99 * amin1(self%source_gas_temperature, ta)
@@ -783,7 +783,7 @@ c  momentum or buoyant jet plume rise
          cmev0 = 1.
          cmevp(1) = cmev0
          cmdap(1) = 0.
-         self%vapor_heat_capacity = (wmae / 
+         self%vapor_heat_capacity = (self%ambient_air_molecular_weight / 
      1   self%source_gas_molecular_weight)*cpa
          cp0 = self%vapor_heat_capacity
          zc = self%source_height
@@ -826,7 +826,7 @@ c ==========================================================
       cmevp(1) = cmev0
       cp0 = cmev0*self%vapor_heat_capacity + cmed 
      1    * self%liquid_heat_capacity
-      alfm = (wmae/self%source_gas_molecular_weight)*cmev0
+      alfm = (self%ambient_air_molecular_weight/self%source_gas_molecular_weight)*cmev0
       betm = (self%ambient_air_density/self%source_liquid_density)*cmed
       rho = self%ambient_air_density*ta/(alfm*t0+betm*ta)
       rho0 = rho
@@ -1358,8 +1358,8 @@ c ========================================
       endif
       rtcm = (1.-cm)/cm
       cmp(i) = 1./(1.+xir*xir*rtcm)
-      cvp(i) = wmae*cmp(i)/(self%source_gas_molecular_weight
-     1        +(wmae-self%source_gas_molecular_weight)*cmp(i))
+      cvp(i) = self%ambient_air_molecular_weight*cmp(i)/(self%source_gas_molecular_weight
+     1        +(self%ambient_air_molecular_weight-self%source_gas_molecular_weight)*cmp(i))
       cmdap(i) = (1.-cmp(i))*cmdaa
       cmwp(i) = (1.-cmp(i))*cmwa
       rhop(i) = -1.
@@ -2048,7 +2048,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       ! local variables
       real(4) :: rqs,vhwb
@@ -2151,7 +2151,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       ! local variables
       real(4) :: atau,fgrv,rqs,vhwb
@@ -2183,7 +2183,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
 c  mass and downwind cloud center equations
@@ -2284,7 +2284,7 @@ c  solves the steady state plume conservation equations
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       ! local variables
       real(4) :: zcmx
@@ -2316,7 +2316,7 @@ c  solves the steady state plume conservation equations
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
       r = r0 + dy(1)
@@ -2371,7 +2371,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       ! local variables
       real(4) :: zcmx
@@ -2403,7 +2403,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
       r = r0 + dy(1)
@@ -2463,7 +2463,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       integer :: idpf,nxtr
 
@@ -2503,7 +2503,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
       if(idpf .eq. 2) then
@@ -2524,8 +2524,8 @@ c
          cm = sqs/r
       endif
 
-      cv = (wmae*cm)/(self%source_gas_molecular_weight
-     1     +(wmae-self%source_gas_molecular_weight)*cm)
+      cv = (self%ambient_air_molecular_weight*cm)/(self%source_gas_molecular_weight
+     1     +(self%ambient_air_molecular_weight-self%source_gas_molecular_weight)*cm)
 
       cmw = (1.-cm)*cmwa
       cmda = (1.-cm)*(1.-cmwa)
@@ -2560,14 +2560,14 @@ c
 
       t = etrn/cp
 
-      alfm = wmae*(cmda/wma + cmwv/wmw 
+      alfm = self%ambient_air_molecular_weight*(cmda/wma + cmwv/wmw 
      1     + cmev/self%source_gas_molecular_weight)
       fft = exp(self%press_sat_const_a 
      1    - self%press_sat_const_b 
      1    / (t + self%press_sat_const_c))
       ggt = exp(spaw-spbw/t)
-      pw = (wmae*cmw)/(alfm*wmw)
-      pe = (wmae*cm)/(alfm*self%source_gas_molecular_weight)
+      pw = (self%ambient_air_molecular_weight*cmw)/(alfm*wmw)
+      pe = (self%ambient_air_molecular_weight*cm)/(alfm*self%source_gas_molecular_weight)
 
       ie = 0
       iw = 0
@@ -2690,13 +2690,13 @@ c
 
    40 cmwvm = amin1(cmwvs,cmw)
       cmevm = amin1(cmevs,cm)
-      alfm = wmae*(cmda/wma+cmwvm/wmw 
+      alfm = self%ambient_air_molecular_weight*(cmda/wma+cmwvm/wmw 
      1     + cmevm/self%source_gas_molecular_weight)
 
       if (ie .eq. 1) then
          cmev = cm
         else
-         cmevs = alfm * self%source_gas_molecular_weight*fft/wmae
+         cmevs = alfm * self%source_gas_molecular_weight*fft/self%ambient_air_molecular_weight
          if (cmevs .gt. cm) then
             cmev = cm
             ie = 1
@@ -2708,7 +2708,7 @@ c
       if (iw .eq. 1) then
          cmwv = cmw
         else
-         cmwvs = alfm*wmw*ggt/wmae
+         cmwvs = alfm*wmw*ggt/self%ambient_air_molecular_weight
          if (cmwvs .gt. cmw) then
             cmwv = cmw
             iw = 1
@@ -2721,7 +2721,7 @@ c
       cmwd = cmw-cmwv
       cmed = cm-cmev
       alfm = (cmda/wma + cmwv/wmw 
-     1     + cmev/self%source_gas_molecular_weight)*wmae
+     1     + cmev/self%source_gas_molecular_weight)*self%ambient_air_molecular_weight
       cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl 
      1   + cmev*self%vapor_heat_capacity 
      1   + cmed*self%liquid_heat_capacity
@@ -2731,7 +2731,7 @@ c
          fft = exp(
      1             self%press_sat_const_a
      1            -self%press_sat_const_b/(t+ self%press_sat_const_c))
-         cmevsc = (alfm*self%source_gas_molecular_weight*fft)/wmae
+         cmevsc = (alfm*self%source_gas_molecular_weight*fft)/self%ambient_air_molecular_weight
          if (cmevsc .lt. cm) then
             ie = 0
             icyc = 1
@@ -2740,7 +2740,7 @@ c
 
       if (iw .eq. 1) then
          ggt = exp(spaw-spbw/t)
-         cmwvsc = (alfm*wmw*ggt)/wmae
+         cmwvsc = (alfm*wmw*ggt)/self%ambient_air_molecular_weight
          if (cmwvsc .lt. cmw) then
             iw = 0
             icyc = 1
@@ -2791,7 +2791,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
       integer :: idpf,nxtr
 
@@ -2827,7 +2827,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
 c  coupled velocity, height and average ambient velocity calculation
@@ -3020,7 +3020,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3054,7 +3054,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
 c  coupled velocity, height and average ambient velocity calculation
@@ -3179,7 +3179,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3216,7 +3216,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
 
@@ -3396,7 +3396,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
       
       common sr3,third,f227,dbt,utst,wse,bse
@@ -3426,7 +3426,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
       xp(nx) = x
@@ -3490,7 +3490,7 @@ c  writes the input values used in the problem
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3523,7 +3523,7 @@ c  writes the input values used in the problem
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
 c   release gas properties
@@ -3595,7 +3595,7 @@ c   field parameters
 
 c   ambient meteorological variables
 
-      write (3,104) wmae,cpaa,
+      write (3,104) self%ambient_air_molecular_weight,cpaa,
      1              self%ambient_air_density,
      1              za,pa,ua,ta,rh,uastr,stab,ala,z0
 
@@ -3663,7 +3663,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       
       ! Local variables
       integer :: i
@@ -3696,7 +3696,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
       write (3,95)
@@ -3753,7 +3753,7 @@ c  calculates and writes the time averaged volume concentration
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1           dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3792,7 +3792,7 @@ c  calculates and writes the time averaged volume concentration
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
 
 
 c  calculate time averaged volume concentration
