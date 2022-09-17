@@ -148,7 +148,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -196,7 +196,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -416,7 +416,7 @@ c  atmospheric and physical constants
       wma = 0.02896
       cpa = 1005.87
       self%gravitational_constant = 9.80665
-      pa = 101325.
+      self%ambient_atmospheric_pressure = 101325.
 
       wmw = 0.01802
       rhowl = 1000.
@@ -492,7 +492,7 @@ c   ====================
 
 c  calculate ambient meteorological values
 
-      self%ambient_air_density = self%ambient_air_molecular_weight*pa/(self%gas_constant*ta)
+      self%ambient_air_density = self%ambient_air_molecular_weight*self%ambient_atmospheric_pressure/(self%gas_constant*ta)
 
       tau0 = 10.
       at0 = 0.
@@ -579,7 +579,7 @@ c ====================================
 
 
   150 self%source_gas_density = self%source_gas_molecular_weight
-     1 *pa/(self%gas_constant*self%source_gas_temperature)
+     1 *self%ambient_atmospheric_pressure/(self%gas_constant*self%source_gas_temperature)
       self%continuous_source_mass = self%mass_source_rate
      1                            * self%continuous_source_duration
       hqtcs = .5*self%continuous_source_mass
@@ -2029,7 +2029,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2056,7 +2056,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2134,7 +2134,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2159,7 +2159,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2264,7 +2264,7 @@ c  solves the steady state plume conservation equations
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2292,7 +2292,7 @@ c  solves the steady state plume conservation equations
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2351,7 +2351,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2379,7 +2379,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2443,7 +2443,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2479,7 +2479,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -2771,7 +2771,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -2803,7 +2803,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3000,7 +3000,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3030,7 +3030,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3159,7 +3159,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3192,7 +3192,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3376,7 +3376,7 @@ c
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3402,7 +3402,7 @@ c
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3470,7 +3470,7 @@ c  writes the input values used in the problem
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3499,7 +3499,7 @@ c  writes the input values used in the problem
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3598,7 +3598,15 @@ c   ambient meteorological variables
       write (3,104) self%ambient_air_molecular_weight,
      1              self%ambient_air_heat_capacity,
      1              self%ambient_air_density,
-     1              self%ambient_measurement_height,pa,ua,ta,rh,uastr,stab,ala,z0
+     1              self%ambient_measurement_height,
+     1              self%ambient_atmospheric_pressure,
+     1              ua,
+     1              ta,
+     1              rh,
+     1              uastr,
+     1              stab,
+     1              ala,
+     1              z0
 
   104 format (//'ambient meteorological properties'//,1p,
      1 ' molecular weight of ambient air (kg)   ',10x,'- wmae  =',e12.4/
@@ -3644,7 +3652,7 @@ c  writes the instantaneous spatially averaged cloud properties
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3672,7 +3680,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
@@ -3734,7 +3742,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,pa,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
       real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
@@ -3769,7 +3777,7 @@ c  calculates and writes the time averaged volume concentration
       common sr3,third,f227,dbt,utst,wse,bse
       common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,pa,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 

@@ -37,7 +37,7 @@ type SlabData
   real(4) :: ambient_air_heat_capacity
   real(4) :: ambient_air_density
   real(4) :: ambient_measurement_height
-  ! real(4) :: ambient_atmospheric_pressure
+  real(4) :: ambient_atmospheric_pressure
   ! real(4) :: ambient_wind_speed
   ! real(4) :: ambient_temperature
   ! real(4) :: relative_humidity
