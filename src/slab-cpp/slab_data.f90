@@ -42,9 +42,9 @@ type SlabData
   real(4) :: ambient_temperature
   real(4) :: relative_humidity
   real(4) :: ambient_friction_velocity
-  ! real(4) :: atmospheric_stability_class_value
-  ! real(4) :: inverse_monin_obukhov_length
-  ! real(4) :: surface_roughness_height
+  real(4) :: stability_class
+  real(4) :: inverse_length ! monin_obukhov_
+  real(4) :: surface_roughness_height
 
   ! Additional Parameters
   integer :: substep_multiplier
