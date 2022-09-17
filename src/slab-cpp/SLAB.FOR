@@ -168,7 +168,7 @@ c
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1           dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr,msfm,mnfm,mffm
 
       ! Local variables
@@ -220,7 +220,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 c  constants for calculating stability regions
 
@@ -271,7 +271,11 @@ c  ============
   110 read (2,108) z0
        if(z0 .lt. 0.) return
 
-      read (2,108) self%ambient_measurement_height,self%ambient_wind_speed,self%ambient_temperature,rh,stab
+      read (2,108) self%ambient_measurement_height,
+     1             self%ambient_wind_speed,
+     1             self%ambient_temperature,
+     1             self%relative_humidity,
+     1             stab
       stabin = stab
 
 c ================================
@@ -367,7 +371,13 @@ c =============
      1 '  tsd   =',f10.0/'  qtis  =',f10.2/'  hs    =',f10.2/
      1 '  tav   =',f10.2/'  xffm  =',f10.2/('  zp(',i1,') =',f10.2))
 
-      write (3,115) z0,self%ambient_measurement_height,self%ambient_wind_speed,self%ambient_temperature,rh,stabin
+      write (3,115) z0,
+     1              self%ambient_measurement_height,
+     1              self%ambient_wind_speed,
+     1              self%ambient_temperature,
+     1              self%relative_humidity,
+     1              stabin
+     
   115 format ('  z0    =',f10.6/'  za    =',f10.2/'  ua    =',f10.2/
      1 '  ta    =',f10.2/,'  rh    =',f10.2/,'  stab  =',f10.2)
 
@@ -426,7 +436,7 @@ c  atmospheric and physical constants
       spaw = 15.08
       spbw = 5514.
 
-      rpwa = .01*rh*exp(spaw-spbw/self%ambient_temperature)
+      rpwa = .01*self%relative_humidity*exp(spaw-spbw/self%ambient_temperature)
       cmwa = wmw*rpwa/(wma+(wmw-wma)*rpwa)
       cmdaa = 1.-cmwa
       self%ambient_air_heat_capacity = cmdaa*cpa + cmwa*cpwv
@@ -2050,7 +2060,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       ! local variables
       real(4) :: rqs,vhwb
@@ -2153,7 +2163,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       ! local variables
       real(4) :: atau,fgrv,rqs,vhwb
@@ -2185,7 +2195,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c  mass and downwind cloud center equations
@@ -2286,7 +2296,7 @@ c  solves the steady state plume conservation equations
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       ! local variables
       real(4) :: zcmx
@@ -2318,7 +2328,7 @@ c  solves the steady state plume conservation equations
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       r = r0 + dy(1)
@@ -2373,7 +2383,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       ! local variables
       real(4) :: zcmx
@@ -2405,7 +2415,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       r = r0 + dy(1)
@@ -2465,7 +2475,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       integer :: idpf,nxtr
 
@@ -2505,7 +2515,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       if(idpf .eq. 2) then
@@ -2793,7 +2803,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       integer :: idpf,nxtr
 
@@ -2829,7 +2839,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c  coupled velocity, height and average ambient velocity calculation
@@ -3022,7 +3032,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3056,7 +3066,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c  coupled velocity, height and average ambient velocity calculation
@@ -3181,7 +3191,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3218,7 +3228,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 
@@ -3398,7 +3408,7 @@ c
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
       
       common sr3,third,f227,dbt,utst,wse,bse
@@ -3428,7 +3438,7 @@ c
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       xp(nx) = x
@@ -3492,7 +3502,7 @@ c  writes the input values used in the problem
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
-      real(4) :: wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3525,7 +3535,7 @@ c  writes the input values used in the problem
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c   release gas properties
@@ -3604,7 +3614,7 @@ c   ambient meteorological variables
      1              self%ambient_atmospheric_pressure,
      1              self%ambient_wind_speed,
      1              self%ambient_temperature,
-     1              rh,
+     1              self%relative_humidity,
      1              uastr,
      1              stab,
      1              ala,
@@ -3674,7 +3684,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
       real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       
       ! Local variables
       integer :: i
@@ -3707,7 +3717,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       write (3,95)
@@ -3764,7 +3774,7 @@ c  calculates and writes the time averaged volume concentration
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
      1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1           dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1           wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3803,7 +3813,7 @@ c  calculates and writes the time averaged volume concentration
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
      1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
      1 dhw,cmdaa,cmwa,spaw,spbw,t0,
-     1 wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c  calculate time averaged volume concentration
