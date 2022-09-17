@@ -142,31 +142,33 @@ c    functions used in main calculation
 c        uafn
 c
       subroutine state()
-      integer :: idspl,nx,keval,ncalc,nssm,nzpm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      use slab_data, only: SlabData
+      type(SlabData) :: self
+      integer :: nx,keval,nzpm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,zp,
-     1           as,xffm,tav,tffm
+      real(4) :: zp,
+     1           xffm,tav,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1           dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1           wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr,msfm,mnfm,mffm
 
       ! Local variables
@@ -174,11 +176,11 @@ c
       real(4) :: rlg,rm3,rit,rjt,rav,rav2,htpp,hdsig,hhf
       real(4) :: gzi,gzip,facd,facn,erfy2,erfy1,ezi,erfx1
       real(4) :: erfx2,erfcy1,erfcy2,erfcx1,erfcx2
-      real(4) :: epy1,epy2,epx1,epx2,cpwl,cvbrx,cc1
-      real(4) :: afata,ak,asig,cpsl,betac2,aal,al,al1
+      real(4) :: epy1,epy2,epx1,epx2,cvbrx,cc1
+      real(4) :: afata,ak,asig,betac2,aal,al,al1  ! maybe delete cpsl here
       real(4) :: al2,al3,alfm,alm,am,amsfm,angam,anstp
       real(4) :: astb,at0,atot,betm,betu,bmax,bmin,bsen
-      real(4) :: bsm,bxr,bxs0,bxtr,cfpr,ar,cmed0,cmpr
+      real(4) :: bsm,bxr,bxs0,bxtr,cfpr,ar,cmpr
       real(4) :: cupr,cvpk,dcm,dcm3,delu,dh,dln,ds,dt
       real(4) :: dx,dxpr,dxrk,dxxi,en,en2,en3,eni
       real(4) :: hprt,hqtcs,hs0,hsu,phm,phmi
@@ -191,34 +193,34 @@ c
       real(4) :: rbs,rhof2,rpwa,uaz2,uf,zcmx
       integer :: i,ijt,jtr,itr,j,k,ngam,ns,nstp,nxi
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 c  constants for calculating stability regions
 
@@ -246,29 +248,46 @@ c  ============
 c   read input
 c  ============
 
-      read (2,107) idspl,ncalc
+      read (2,107) self%spill_type,self%substep_multiplier
   107 format (i5)
-      read (2,108) wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,spc
-      read (2,108) ts,qs,as,tsd,qtis,hs
+      read (2,108) self%source_gas_molecular_weight,
+     1             self%vapor_heat_capacity,
+     1             self%boiling_point_temperature,
+     1             self%liquid_mass_fraction,
+     1             self%heat_of_vaporization,
+     1             self%liquid_heat_capacity,
+     1             self%source_liquid_density,
+     1             self%press_sat_const_b,
+     1             self%press_sat_const_c
+      read (2,108) self%source_gas_temperature,
+     1             self%mass_source_rate,
+     1             self%source_area,
+     1             self%continuous_source_duration,
+     1             self%instantaneous_source_mass,
+     1             self%source_height
       read (2,108) tav,xffm,(zp(i),i=1,4)
   108 format (f10.3)
 
-  110 read (2,108) z0
-       if(z0 .lt. 0.) return
+  110 read (2,108) self%surface_roughness_height
+       if(self%surface_roughness_height .lt. 0.) return
 
-      read (2,108) za,ua,ta,rh,stab
-      stabin = stab
+      read (2,108) self%ambient_measurement_height,
+     1             self%ambient_wind_speed,
+     1             self%ambient_temperature,
+     1             self%relative_humidity,
+     1             self%stability_class
+      stabin = self%stability_class
 
 c ================================
 c  calculate stability parameters
 c ================================
 
-      al1 = .0081/(z0**.3044)
-      if (z0 .gt. .0111) then
-         al2 = .0385/(z0**.1715)
-         al3 = .0875/(z0**.1028)
+      al1 = .0081/(self%surface_roughness_height**.3044)
+      if (self%surface_roughness_height .gt. .0111) then
+         al2 = .0385/(self%surface_roughness_height**.1715)
+         al3 = .0875/(self%surface_roughness_height**.1028)
        else
-         al2 = al1 +.0137/(z0**.1715) + .0218
+         al2 = al1 +.0137/(self%surface_roughness_height**.1715) + .0218
          al3 = al2 +.0557
       endif
 
@@ -278,9 +297,9 @@ c ================================
       dln = en2 - eni
       alm = al1*(3.5**(eni+dln/3.25))
 
-      if (stab .eq. 0.) then
-         read (2,108) ala
-         aal = abs(ala)
+      if (self%stability_class .eq. 0.) then
+         read (2,108) self%inverse_length
+         aal = abs(self%inverse_length)
          if (aal .lt. al2) then
             astb = (aal/al1)**(1./en2)
          else if (aal .lt. alm) then
@@ -291,16 +310,16 @@ c ================================
             astb = 3.5
          endif
 
-              if (ala.ge.0.) then
+              if (self%inverse_length.ge.0.) then
                  stb = astb
                else
                  stb = -astb
               endif
 
-         stab = 4.0 + stb
+         self%stability_class = 4.0 + stb
 
          else
-            stb = stab -4.0
+            stb = self%stability_class -4.0
          astb = abs(stb)
          if (astb .lt. 2.0) then
             aal = al1*(astb**en2)
@@ -312,9 +331,9 @@ c ================================
          endif
 
               if (stb.ge.0.) then
-                 ala = aal
+                 self%inverse_length = aal
                else
-                 ala = -aal
+                 self%inverse_length = -aal
               endif
 
          endif
@@ -324,8 +343,24 @@ c  write input
 c =============
 
 
-      write (3,114) idspl,ncalc,wms,cps,tbp,cmed0,dhe,cpsl,rhosl,spb,
-     1 spc,ts,qs,as,tsd,qtis,hs,tav,xffm,(i,zp(i),i=1,4)
+      write (3,114) self%spill_type,self%substep_multiplier,
+     1 self%source_gas_molecular_weight,
+     1 self%vapor_heat_capacity,
+     1 self%source_gas_temperature,self%liquid_mass_fraction,
+     1 self%heat_of_vaporization,
+     1 self%liquid_heat_capacity,
+     1 self%source_liquid_density,
+     1 self%press_sat_const_b,
+     1 self%press_sat_const_c,
+     1 self%source_gas_temperature,
+     1 self%mass_source_rate,
+     1 self%source_area,
+     1 self%continuous_source_duration,
+     1 self%instantaneous_source_mass,
+     1 self%source_height,
+     1 tav,
+     1 xffm,
+     1 (i,zp(i),i=1,4)
 
   114 format (///'problem input'//'  idspl =',5x,i5/'  ncalc =',5x,i5/
      1 '  wms   =',f10.6/'  cps   =',f10.2/
@@ -336,12 +371,18 @@ c =============
      1 '  tsd   =',f10.0/'  qtis  =',f10.2/'  hs    =',f10.2/
      1 '  tav   =',f10.2/'  xffm  =',f10.2/('  zp(',i1,') =',f10.2))
 
-      write (3,115) z0,za,ua,ta,rh,stabin
+      write (3,115) self%surface_roughness_height,
+     1              self%ambient_measurement_height,
+     1              self%ambient_wind_speed,
+     1              self%ambient_temperature,
+     1              self%relative_humidity,
+     1              stabin
+
   115 format ('  z0    =',f10.6/'  za    =',f10.2/'  ua    =',f10.2/
      1 '  ta    =',f10.2/,'  rh    =',f10.2/,'  stab  =',f10.2)
 
       if (stabin .eq. 0.) then
-      write (3,112) ala
+      write (3,112) self%inverse_length
   112 format ('  ala   =',f10.4)
       endif
 
@@ -351,31 +392,41 @@ c  ===============
 
 c   gas constant
 
-       rr = 8.31431
+       self%gas_constant = 8.31431
 
 c  saturation pressure constant default
 
-      if (spb .lt. 0.) then
-        spb = dhe*wms/rr
-        spc = 0.
+      if (self%press_sat_const_b .lt. 0.) then
+        self%press_sat_const_b = self%heat_of_vaporization 
+     1      * self%source_gas_molecular_weight
+     1      / self%gas_constant
+        self%press_sat_const_c = 0.
       endif
 
 c  boiling point temperature check
 
-      spa = spb/(tbp+spc)
-      if (ts .lt. tbp) ts = tbp
-      if (cmed0 .gt. 0.) ts = tbp
+      self%press_sat_const_a = 
+     1    self%press_sat_const_b
+     1    / (self%boiling_point_temperature
+     1    +  self%press_sat_const_c)
+      if (self%source_gas_temperature .lt. 
+     1    self%boiling_point_temperature) then
+        self%source_gas_temperature = self%boiling_point_temperature
+      end if
 
+      if (self%liquid_mass_fraction .gt. 0.) then
+        self%source_gas_temperature=self%boiling_point_temperature
+      end if
 c  initial droplet concentration
 
-      cmed = cmed0
+      cmed = self%liquid_mass_fraction
 
 c  atmospheric and physical constants
 
       wma = 0.02896
       cpa = 1005.87
-      grav = 9.80665
-      pa = 101325.
+      self%gravitational_constant = 9.80665
+      self%ambient_atmospheric_pressure = 101325.
 
       wmw = 0.01802
       rhowl = 1000.
@@ -385,15 +436,15 @@ c  atmospheric and physical constants
       spaw = 15.08
       spbw = 5514.
 
-      rpwa = .01*rh*exp(spaw-spbw/ta)
+      rpwa = .01*self%relative_humidity*exp(spaw-spbw/self%ambient_temperature)
       cmwa = wmw*rpwa/(wma+(wmw-wma)*rpwa)
       cmdaa = 1.-cmwa
-      cpaa = cmdaa*cpa + cmwa*cpwv
-      wmae = wma*wmw/(wmw+(wma-wmw)*cmwa)
+      self%ambient_air_heat_capacity = cmdaa*cpa + cmwa*cpwv
+      self%ambient_air_molecular_weight = wma*wmw/(wmw+(wma-wmw)*cmwa)
 
 c  number of integration steps
 
-      nssm = ncalc + ncalc + ncalc
+      self%num_calculation_substeps = 3 * self%substep_multiplier
       msfm = 11
       mnfm = 50
       mffm = 61
@@ -451,7 +502,8 @@ c   ====================
 
 c  calculate ambient meteorological values
 
-      rhoa = wmae*pa/(rr*ta)
+      self%ambient_air_density = self%ambient_air_molecular_weight*self%ambient_atmospheric_pressure 
+     1                         / (self%gas_constant * self%ambient_temperature)
 
       tau0 = 10.
       at0 = 0.
@@ -463,19 +515,19 @@ c  calculate ambient meteorological values
       zl = 1. + .8*stb
       endif
 
-      if (za .gt. 3.) then
-      z = za
+      if (self%ambient_measurement_height .gt. 3.) then
+      z = self%ambient_measurement_height
       else
       z = 3.
       endif
 
-      ala0 = ala*(1.+z/zl)
+      ala0 = self%inverse_length*(1.+z/zl)
       hmx = 130.*(2.**(3.-stb))
-      bs = .5*sqrt(as)
+      self%source_half_width = .5*sqrt(self%source_area)
 
 c  check if source below mixing layer height
-      if (hs .gt. (hmx-bs)) then
-         write (3,140) hs,hmx,bs
+      if (self%source_height .gt. (hmx-self%source_half_width)) then
+         write (3,140) self%source_height,hmx,self%source_half_width
   140   format ('input source height hs is greater than the',/,
      1   ' calculated mixing layer height hmx minus ',/,
      1   'the stack half width bs.  program terminated.',/,1p,
@@ -490,10 +542,10 @@ c  check if source below mixing layer height
 
 c  initialize velocity function
 
-      zt = 2.71828183*z0
+      zt = 2.71828183*self%surface_roughness_height
       cu1 = 1./zt
       cu2 = 0.
-      uf = uafn(zt,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uf = uafn(zt,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       if (ala0 .lt. 0.) then
       phmi = 1./sqrt(sqrt(1.-16.*zl*ala0))
       gu = -8.*ala0/(1.-phmi)
@@ -507,14 +559,15 @@ c  initialize velocity function
 
 c  calculatre friction velocity
 
-      uastr = xk*ua/uafn(za,z0,ala0,zl,hmx,zt,cu1,cu2)
-      uastr2 = uastr*uastr
-      uaz2 = (uastr/xk)*uafn(2.,z0,ala0,zl,hmx,zt,cu1,cu2)
+      self%ambient_friction_velocity = xk*self%ambient_wind_speed/uafn(self%ambient_measurement_height
+     1                                 ,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      uastr2 = self%ambient_friction_velocity*self%ambient_friction_velocity
+      uaz2 = (self%ambient_friction_velocity/xk)*uafn(2.,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       tffm = xffm/uaz2
-      cf0 = uastr/uaz2
+      cf0 = self%ambient_friction_velocity/uaz2
       rcf = sqrt(cf0/cf00)
       hrf = 4.0
-      urf = uafn(hrf,z0,ala0,zl,hmx,zt,cu1,cu2)
+      urf = uafn(hrf,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
 
 
 c
@@ -537,51 +590,54 @@ c ====================================
 c ====================================
 
 
-  150 rhos = wms*pa/(rr*ts)
-      qtcs = qs*tsd
-      hqtcs = .5*qtcs
+  150 self%source_gas_density = self%source_gas_molecular_weight
+     1 *self%ambient_atmospheric_pressure/(self%gas_constant*self%source_gas_temperature)
+      self%continuous_source_mass = self%mass_source_rate
+     1                            * self%continuous_source_duration
+      hqtcs = .5*self%continuous_source_mass
       nxtr = mffm + 1
       idpf = 0
       tgon = 1.
 
-      if(idspl .eq. 1) then
+      if(self%spill_type .eq. 1) then
 c ==========================
 c  evaporating pool release
 c ==========================
-      ws = qs/(rhos*as)
-      bse = bs
-      qtis = 0.
-      hs = 0.
-      us = 0.
+      self%vertical_vapor_velocity = self%mass_source_rate
+     1   / (self%source_gas_density*self%source_area)
+      bse = self%source_half_width
+      self%instantaneous_source_mass = 0.
+      self%source_height = 0.
+      self%horizontal_vapor_velocity = 0.
       zc = 0.
       zc0 = 0.
       zcp(1) = 0.
       xcc0 = 0.
-      tim = tsd
+      tim = self%continuous_source_duration
       cmed = 0.
-      call editin
+      call editin(self)
       go to 200
 
-      else if (idspl .eq. 2) then
+      else if (self%spill_type .eq. 2) then
 c ========================
 c  horizontal jet release
 c ========================
-      t0 = ts
+      t0 = self%source_gas_temperature
       cmev0 = 1.-cmed
-      alfm = (wmae/wms)*cmev0
-      betm = (rhoa/rhosl)*cmed
-      rho = rhoa*ta/(alfm*t0+betm*ta)
+      alfm = (self%ambient_air_molecular_weight/self%source_gas_molecular_weight)*cmev0
+      betm = (self%ambient_air_density/self%source_liquid_density)*cmed
+      rho = self%ambient_air_density*self%ambient_temperature/(alfm*t0+betm*self%ambient_temperature)
 
-      us = qs/(rho*as)
+      self%horizontal_vapor_velocity = self%mass_source_rate/(rho*self%source_area)
       alfg = 0.
-      bb = bs
+      bb = self%source_half_width
       h = bb+bb
       hh = .5*h
-      htp = hs+hh
-      if (hs .le. hh) then
+      htp = self%source_height+hh
+      if (self%source_height .le. hh) then
          alfg = .25
-         bb = .5*(sqrt(hs*hs + as+as) - hs)
-         h = bb + hs
+         bb = .5*(sqrt(self%source_height*self%source_height + self%source_area+self%source_area) - self%source_height)
+         h = bb + self%source_height
          htp = h
       endif
 
@@ -590,8 +646,8 @@ c ========================
          bb = h*bb/hmx
          h = hmx
       endif
-      ws = 0.
-      qtis = 0.
+      self%vertical_vapor_velocity = 0.
+      self%instantaneous_source_mass = 0.
       tp(1) = t0
       cm0 = 1.
       cmp(1) = cm0
@@ -602,110 +658,118 @@ c ========================
       cmwvp(1) = cmwv0
       cmevp(1) = cmev0
       cmdap(1) = 0.
-      cp0 = cmev0*cps + cmed*cpsl
+      cp0 = cmev0*self%vapor_heat_capacity 
+     1    + cmed 
+     1    * self%liquid_heat_capacity
 
       bse = 1.
-      zc = hs
+      zc = self%source_height
       zcmx = hmx-.5*h
       if (zc .gt. zcmx) zc=zcmx
       zc0 = zc
       zcp(1) = zc
       xcc0 = 1.
       bxs0 = 0.
-      tim = tsd
+      tim = self%continuous_source_duration
 
-      call editin
+      call editin(self)
       go to 400
 
-      else if (idspl .eq. 3) then
+      else if (self%spill_type .eq. 3) then
 
 c ======================
 c  vertical jet release
 c ======================
 
 
-      t0 = ts
+      t0 = self%source_gas_temperature
       cmev0 = 1.-cmed
-      alfm = (wmae/wms)*cmev0
-      betm = (rhoa/rhosl)*cmed
-      rho = rhoa*ta/(alfm*t0+betm*ta)
+      alfm = (self%ambient_air_molecular_weight/self%source_gas_molecular_weight)*cmev0
+      betm = (self%ambient_air_density/self%source_liquid_density)*cmed
+      rho = self%ambient_air_density*self%ambient_temperature/(alfm*t0+betm*self%ambient_temperature)
       rho0 = rho
 
-      ws = qs/(rho*as)
-      us = 0.
+      self%vertical_vapor_velocity = self%mass_source_rate/(rho*self%source_area)
+      self%horizontal_vapor_velocity = 0.
       bse = 1.
-      qtis = 0.
+      self%instantaneous_source_mass = 0.
       xcc0 = 1.
       bxs0 = 0.
-      tim = tsd
+      tim = self%continuous_source_duration
 
-      call editin
+      call editin(self)
 
 c  plume rise calculation
-      hsu = hs
-      if (hs .lt. 1.0) hsu = 1.0
-      uahs = (uastr/xk)*uafn(hsu,z0,ala0,zl,hmx,zt,cu1,cu2)
+      hsu = self%source_height
+      if (self%source_height .lt. 1.0) hsu = 1.0
+      uahs = (self%ambient_friction_velocity/xk)*uafn(hsu,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
 
-      betu = .4 + 1.2*uahs/ws
-      hprm = 1.0363*ws*bs/(betu*sqrt(uahs*uastr))
+      betu = .4 + 1.2*uahs/self%vertical_vapor_velocity
+      hprm = 1.0363*self%vertical_vapor_velocity*self%source_half_width/(betu*sqrt(uahs*self%ambient_friction_velocity))
       h67 = hprm**.85714
       do 155 i=1,3
-      hprt = h67*((hs+hprm)**.14286)
-      hprm = (hs+.85714*hprm)*hprt/(hs+hprm-.14286*hprt)
+      hprt = h67*((self%source_height+hprm)**.14286)
+      hprm = (self%source_height+.85714*hprm)*hprt/(self%source_height+hprm-.14286*hprt)
   155 continue
 
 c  dense gas, momentum, or buoyant jet
-      if (rho .gt. rhoa) then
+      if (rho .gt. self%ambient_air_density) then
 
 c  dense gas jet plume rise
-         ds = 4.0*bs/srpi
-         fr2 = ws*ws/(grav*ds*(rho-rhoa)/rhoa)
-         sgs = rho/rhoa
-         rwus = ws/uahs
+         ds = 4.0*self%source_half_width/srpi
+         fr2 = self%vertical_vapor_velocity*self%vertical_vapor_velocity/(self%gravitational_constant
+     1 *ds*(rho-self%ambient_air_density)/self%ambient_air_density)
+         sgs = rho/self%ambient_air_density
+         rwus = self%vertical_vapor_velocity/uahs
          hprd = 1.32*ds*((rwus*sgs*fr2)**.3333)
          hpr = hprm*hprd/sqrt(hprd*hprd+hprm*hprm)
-         if ((hs+hpr) .gt. hmx) hpr=hmx-hs
+         if ((self%source_height+hpr) .gt. hmx) hpr=hmx-self%source_height
          xpr = .435*hpr*hpr*hpr/(rwus*rwus*sgs*ds*ds)
          cvpk = 1.69*rwus/((hpr/ds)**1.85)
          if (cvpk .gt. .99) cvpk = .99
          cv = (.5236*(1.-cvpk) + cvpk)*cvpk
-         cm = wms*cv/(wmae+(wms-wmae)*cv)
-         r0 = .5*qs
+         cm = self%source_gas_molecular_weight
+     1      *cv/(self%ambient_air_molecular_weight+(self%source_gas_molecular_weight
+     1      -self%ambient_air_molecular_weight)*cv)
+         r0 = .5*self%mass_source_rate
          r = r0/cm
          cm0 = 1.
          cmev0 = 1.-cmed
          cmw0 = 0.
          cmwv0 = 0.
-         cp0 = cmev0*cps + cmed*cpsl
+         cp0 = cmev0*self%vapor_heat_capacity + cmed 
+     1       * self%liquid_heat_capacity
          xn = 1.+xpr
          sft = 0.
-         call thermo
+         call thermo(self)
          ijt = 2
         else
 
 c  momentum or buoyant jet plume rise
-         hprb = 1.7254*grav*(rhoa-rho)*ws*bs*bs/
-     1     (rhoa*uahs*uastr*uastr)
+         hprb = 1.7254*self%gravitational_constant
+     1     *(self%ambient_air_density-rho)*self%vertical_vapor_velocity*self%source_half_width*self%source_half_width/
+     1     (self%ambient_air_density*uahs*self%ambient_friction_velocity*self%ambient_friction_velocity)
          h35 = hprb**.6
          do 160 i=1,3
-         hprt = h35*((hs+hprb)**.4)
-         hprb = (hs+.6*hprb)*hprt/(hs+hprb-.4*hprt)
+         hprt = h35*((self%source_height+hprb)**.4)
+         hprb = (self%source_height+.6*hprb)*hprt/(self%source_height+hprb-.4*hprt)
   160    continue
          hpr = sqrt(hprb*hprb+hprm*hprm)
-         hs = hs+hpr
-         if (hs .gt. (hmx-bs))  hs = hmx-bs
-         us = (uastr/xk)*uafn(hs,z0,ala0,zl,hmx,zt,cu1,cu2)
-         ws = 0.
-         rho = rhoa
-         rhos = rhoa
-         as = qs/(rho*us)
+         self%source_height = self%source_height+hpr
+         if (self%source_height .gt. (hmx-self%source_half_width))  self%source_height = hmx-self%source_half_width
+         self%horizontal_vapor_velocity = (self%ambient_friction_velocity/xk)*uafn(self%source_height,
+     1    self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+         self%vertical_vapor_velocity = 0.
+         rho = self%ambient_air_density
+         self%source_gas_density = self%ambient_air_density
+         self%source_area = self%mass_source_rate/(rho*self%horizontal_vapor_velocity)
          alfg = 0.
-         bb = .5*sqrt(as)
-         if (bb .lt. bs) bb = bs
-         h = as/(bb+bb)
+         bb = .5*sqrt(self%source_area)
+         if (bb .lt. self%source_half_width) bb = self%source_half_width
+         h = self%source_area/(bb+bb)
          hh = .5*h
-         htp = hs+hh
-         if (hs .lt. hh) then
+         htp = self%source_height+hh
+         if (self%source_height .lt. hh) then
             alfg = .25
             bb = h*bb/htp
             h = htp
@@ -715,12 +779,14 @@ c  momentum or buoyant jet plume rise
             bb = h*bb/hmx
             h = hmx
          endif
-         ts = (wms/wmae)*ta
-         t0 = ts
+         self%source_gas_temperature = (self%source_gas_molecular_weight 
+     1                               / self%ambient_air_molecular_weight) * self%ambient_temperature
+         t0 = self%source_gas_temperature
          tp(1) = t0
-         tbp = .99*amin1(ts,ta)
-         spa = spb/(tbp+spc)
-         spaw = spbw/tbp
+         self%boiling_point_temperature = .99 * amin1(self%source_gas_temperature, self%ambient_temperature)
+         self%press_sat_const_a = self%press_sat_const_b 
+     1       / (self%boiling_point_temperature + self%press_sat_const_c)
+         spaw = spbw/self%boiling_point_temperature
          cm0 = 1.
          cmp(1) = cm0
          cvp(1) = 1.
@@ -731,9 +797,10 @@ c  momentum or buoyant jet plume rise
          cmev0 = 1.
          cmevp(1) = cmev0
          cmdap(1) = 0.
-         cps = (wmae/wms)*cpa
-         cp0 = cps
-         zc = hs
+         self%vapor_heat_capacity = (self%ambient_air_molecular_weight / 
+     1   self%source_gas_molecular_weight)*cpa
+         cp0 = self%vapor_heat_capacity
+         zc = self%source_height
          zcmx = hmx-.5*h
          if (zc .gt. zcmx) zc = zcmx
          zc0 = zc
@@ -751,14 +818,14 @@ c  go to plume rise interpolation
          go to 500
       endif
 
-      else if (idspl .eq. 4) then
+      else if (self%spill_type .eq. 4) then
 c ==========================================================
 c  instantaneous of short duration evaporating pool release
 c ==========================================================
-      ws = qs/(rhos*as)
-      bse = bs
+      self%vertical_vapor_velocity = self%mass_source_rate/(self%source_gas_density*self%source_area)
+      bse = self%source_half_width
 
-      t0 = ts
+      t0 = self%source_gas_temperature
       tp(1) = t0
       cm0 = 1.
       cmp(1) = cm0
@@ -768,25 +835,26 @@ c ==========================================================
       cmwv0 = 0.
       cmwvp(1) = cmwv0
       cmdap(1) = 0.
-      if (qtis .eq. 0.) cmed = 0.
+      if (self%instantaneous_source_mass .eq. 0.) cmed = 0.
       cmev0 = 1.-cmed
       cmevp(1) = cmev0
-      cp0 = cmev0*cps + cmed*cpsl
-      alfm = (wmae/wms)*cmev0
-      betm = (rhoa/rhosl)*cmed
-      rho = rhoa*ta/(alfm*t0+betm*ta)
+      cp0 = cmev0*self%vapor_heat_capacity + cmed 
+     1    * self%liquid_heat_capacity
+      alfm = (self%ambient_air_molecular_weight/self%source_gas_molecular_weight)*cmev0
+      betm = (self%ambient_air_density/self%source_liquid_density)*cmed
+      rho = self%ambient_air_density*self%ambient_temperature/(alfm*t0+betm*self%ambient_temperature)
       rho0 = rho
       rhop(1) = rho
 
-      hs = qtis/(rho*as)
-      us = 0.
+      self%source_height = self%instantaneous_source_mass/(rho*self%source_area)
+      self%horizontal_vapor_velocity = 0.
       zc = 0.
       zc0 = 0.
       zcp(1) = 0.
       idpf = 2
       tim = 0.
       nxtr = 1
-      call editin
+      call editin(self)
       go to 700
 
       else
@@ -807,7 +875,7 @@ c ============================
 
 
   200 continue
-      anstp = nssm*(msfm-1)
+      anstp = self%num_calculation_substeps*(msfm-1)
 
   250 nxi = 2
       dbt = 0.
@@ -816,9 +884,9 @@ c ============================
       dx = (bse+bse)/anstp
       x = -bse
       xp(1) = -bse
-      timp(1) = tsd
-      wse = ws*bs*bs/(bse*bse)
-      wss = ws
+      timp(1) = self%continuous_source_duration
+      wse = self%vertical_vapor_velocity*self%source_half_width*self%source_half_width/(bse*bse)
+      wss = self%vertical_vapor_velocity
 
       vg = 0.
       vg0 = 0.
@@ -853,7 +921,7 @@ c ============================
 
       betap(1) = sqrt(bb*bb-b*b)/sr3
 
-      rho = rhoa
+      rho = self%ambient_air_density
       rhop(1) = rho
       rho0 = rho
 
@@ -869,17 +937,17 @@ c ============================
       cmevp(1) = cmev0
       cmdap(1) = cmdaa
 
-      cp0 = cpaa
-      t0 = ta
-      tp(1) = ta
+      cp0 = self%ambient_air_heat_capacity
+      t0 = self%ambient_temperature
+      tp(1) = self%ambient_temperature
 
-      z1 = sr3*aa*xk*xk*xk*urf*dx/uastr
-      z2 = (3.*z1*z0*z0)**(1./3.)
-      fhz = log(1.+z2/z0)
+      z1 = sr3*aa*xk*xk*xk*urf*dx/self%ambient_friction_velocity
+      z2 = (3.*z1*self%surface_roughness_height*self%surface_roughness_height)**(1./3.)
+      fhz = log(1.+z2/self%surface_roughness_height)
       he = (3.*z1)/(fhz*fhz)
       do 275 i=1,5
-      fhz = log(1.+he/z0)
-      shz = he + z0
+      fhz = log(1.+he/self%surface_roughness_height)
+      shz = he + self%surface_roughness_height
       fhh = shz*fhz*fhz - 2.*shz*fhz + he + he - z1
       he = he - fhh/(fhz*fhz)
   275 continue
@@ -898,11 +966,11 @@ c ============================
       do 280 i=1,5
       h1 = h1 + dh
       h2 = h2 + dh
-      u1 = uafn(h1,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = uafn(h1,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = uafn(h2,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   280 continue
-      uab = (uastr/xk)*(uab-u2)/30.
+      uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
       uab0 = uab
       uap(1) = 0.
       u = uab
@@ -914,7 +982,7 @@ c ============================
 
       w = u*he/(sr3*dx)
       wp(1) = w
-      al = ala
+      al = self%inverse_length
       if (al < 0) then
          go to 290
       else
@@ -923,7 +991,7 @@ c ============================
   290 stby = 1. - rcf*10.*al
       go to 292
   291 stby = 1./(1.+rcf*10.*al)
-  292 v = afa*stby*ua
+  292 v = afa*stby*self%ambient_wind_speed
       vp(1) = v
       vx = 0.
       vxp(1) = 0.
@@ -942,7 +1010,7 @@ c ===============================================
 
 
       do 355 nx=nxi,msfm
-      do 345 ns=1,nssm
+      do 345 ns=1,self%num_calculation_substeps
 
       do i=1,11
         sum(i) = 0.
@@ -960,7 +1028,7 @@ c ===============================================
 
       keval=k
 
-      call slope
+      call slope(self)
 
       do 320 j=1,11
 
@@ -976,13 +1044,13 @@ c ===============================================
 
   320 continue
 
-      call solve
+      call solve(self)
 
-      call thermo
+      call thermo(self)
 
-      call eval
+      call eval(self)
 
-      call entran
+      call entran(self)
 
       sum(2) = sum(2) + dbbx
       dbt = dbt + dbbx
@@ -1005,7 +1073,8 @@ c ===============================================
       u0 = u
       uab0 = uab
       ubs20 = ubs2
-      srug = .5*alfg*grav*(rho-rhoa)*bb*h*h
+      srug = .5*alfg*self%gravitational_constant
+     1     *(rho-self%ambient_air_density)*bb*h*h
       sru0 = r*u - r*(1.-cm)*uab + srug
       qint0 = qint
 
@@ -1017,7 +1086,7 @@ c ===============================================
 
   345 continue
 
-      call store
+      call store(self)
       xstr = h/cf0
 
   355 continue
@@ -1045,7 +1114,8 @@ c  recalculate initial source size
       dcm3 = dcm * dcm * dcm
       ua3 = uab*uab*uab
 
-      bsen = 3.375 * alfg*grav * (rhop(msfm) - rhoa) * r/
+      bsen = 3.375 * alfg*self%gravitational_constant 
+     1 * (rhop(msfm) - self%ambient_air_density) * r/
      1 (ua3*rhof2*dcm3) - bbp(msfm) + bbp(1)
       bsen = .5*(bse+bsen)
       if(bsen.lt.bmax) goto 378
@@ -1064,7 +1134,7 @@ c  return for source region recalculation
       go to 250
 
   390 if (qint .gt. hqtcs) then
-          idspl = 4
+          self%spill_type = 4
 
 c  switch to short duration release
           go to 150
@@ -1074,10 +1144,12 @@ c  switch to short duration release
       do 395 i=1,11
       xccp(i) = .5*(bse+xp(i))
   395 continue
-      tccp(1) = (qintp(6)+qintp(6))/qs
+      tccp(1) = (qintp(6)+qintp(6))/self%mass_source_rate
       do 396 i=1,5
-      tccp(i+i) = (qintp(5+i)+qintp(6+i))/qs
-      tccp(i+i+1) = (qintp(6+i) + qintp(6+i))/qs
+        tccp(i+i) = (qintp(5+i)+qintp(6+i))
+     1            / self%mass_source_rate
+        tccp(i+i+1) = (qintp(6+i) + qintp(6+i))
+     1              / self%mass_source_rate
   396 continue
 
 c  go to near field region calculation
@@ -1101,7 +1173,7 @@ c ======================================
       xp(1) = 1.
       xccp(1) = 1.
       tccp(1) = 0.
-      timp(1) = tsd
+      timp(1) = self%continuous_source_duration
       wse = 0.
 
       vg = 0.
@@ -1148,39 +1220,40 @@ c ======================================
       do 405 i=1,5
       h1 = h1 + dh
       h2 = h2 + dh
-      u1 = uafn(h1,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = uafn(h1,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = uafn(h2,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   405 continue
-      uab = (uastr/xk)*(uab-u2)/30.
+      uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
       uab0 = uab
       uap(1) = uab
 
-      u = us
+      u = self%horizontal_vapor_velocity
       u0 = u
       up(1) = u
 
       r0 = rho*u*bb*h
-      srug = .5*alfg*grav*(rho-rhoa)*bb*h*h
+      srug = .5*alfg*self%gravitational_constant
+     1 *(rho-self%ambient_air_density)*bb*h*h
       sru0 = r0*u + srug
 
-      delu = (rhoa/rho)*abs(uab-us)
+      delu = (self%ambient_air_density/rho)*abs(uab-self%horizontal_vapor_velocity)
       if (htp .gt. h)  then
          ubs20 = uastr2
          ustr2 = uastr2 + cf1*delu*delu
         else
-         umgs = (uastr/uab)*us
+         umgs = (self%ambient_friction_velocity/uab)*self%horizontal_vapor_velocity
          ubs20 = umgs*umgs
          ustr2 = ubs20 + cf1*delu*delu
       endif
-      uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uah = uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       w = (urf/uah)* aa*xk*sqrt(ustr2)
       wp(1) = w
 
-      if (ala .lt. 0.)  then
-         stby = 1. - rcf*10.*ala
+      if (self%inverse_length .lt. 0.)  then
+         stby = 1. - rcf*10.*self%inverse_length
         else
-         stby = 1./(1. + rcf*10.*ala)
+         stby = 1./(1. + rcf*10.*self%inverse_length)
       endif
       atot = afa*stby
       rab = .5*sigb/atot
@@ -1204,27 +1277,27 @@ c ========================================
 c  vertical jet plume rise interpolations
 c ========================================
 
-  500 msfm = 2.0 + xpr/(bs+bs)
+  500 msfm = 2.0 + xpr/(self%source_half_width+self%source_half_width)
       msfm = min0(msfm,11)
       amsfm = msfm
       dxpr = xpr/(amsfm-1.)
 
-      zcr = hs+hpr
-      uab = (uastr/xk)*uafn(zcr,z0,ala0,zl,hmx,zt,cu1,cu2)
+      zcr = self%source_height+hpr
+      uab = (self%ambient_friction_velocity/xk)*uafn(zcr,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab0 = uab
-      cfpr = 3.*(2.+(xpr/bs))*cf1
+      cfpr = 3.*(2.+(xpr/self%source_half_width))*cf1
       cmpr = sqrt((1.-cm)*(1.-cm) + 4.*cm*cfpr)
       cupr = .5*uab/(1.-cfpr)
       u = cupr * (1.-cm-cfpr-cfpr+cmpr)
       u0 = u
 
-      ar = qs/(rho*u*cm)
-      am = qs/(rho*u)
-      hft = 2.4 + 1.6/(1.+(xpr*xpr)/(100.*bs*bs))
+      ar = self%mass_source_rate/(rho*u*cm)
+      am = self%mass_source_rate/(rho*u)
+      hft = 2.4 + 1.6/(1.+(xpr*xpr)/(100.*self%source_half_width*self%source_half_width))
       bb = sqrt(ar/hft)
-      if (bb .lt. bs)  bb = bs
+      if (bb .lt. self%source_half_width)  bb = self%source_half_width
       b = .9*sqrt(am/hft)
-      bsm = .9*bs
+      bsm = .9*self%source_half_width
       if (b .lt. bsm)  b = bsm
       h = ar/(bb+bb)
       hh = .5*h
@@ -1258,10 +1331,10 @@ c ========================================
 
       rho0 = rho
       t0 = t
-      if (ws .gt. u) then
-         hs0 = bs+bs
+      if (self%vertical_vapor_velocity .gt. u) then
+         hs0 = self%source_half_width+self%source_half_width
         else
-         hs0 = (bs+bs)*ws/u
+         hs0 = (self%source_half_width+self%source_half_width)*self%vertical_vapor_velocity/u
       endif
 
       do 510 i=1,msfm
@@ -1271,20 +1344,20 @@ c ========================================
       xir = (xp(i)-1.)/xpr
       xiz = (xp(i)-1.-xpr)/xpr
       up(i) = u*sqrt(xir)
-      wcp(i) = ws*(u-up(i))/u
+      wcp(i) = self%vertical_vapor_velocity*(u-up(i))/u
 
       hp(i) = hs0 + (h-hs0)*xir
-      zcp(i) = hs+hpr*sqrt(1.-xiz*xiz)
+      zcp(i) = self%source_height+hpr*sqrt(1.-xiz*xiz)
       zcmx = hmx-.5*hp(i)
       if (zcp(i) .gt. zcmx) zcp(i) = zcmx
-      bbp(i) = bs + (bb-bs)*xir
+      bbp(i) = self%source_half_width + (bb-self%source_half_width)*xir
       bp(i) = bsm + (b-bsm)*xir
       betap(i) = sqrt(bbp(i)*bbp(i)-bp(i)*bp(i))/sr3
 
       tccp(i) = 2.*(xp(i)-1.)/u
       xccp(i) = xp(i)
-      if (tccp(i) .lt. tsd) then
-         qint = .5*qs*tccp(i)
+      if (tccp(i) .lt. self%continuous_source_duration) then
+         qint = .5*self%mass_source_rate*tccp(i)
          qintp(i) = qint
          qint0 = qint
         else
@@ -1293,13 +1366,14 @@ c ========================================
          qint0 = qint
          tim = tccp(i)
          timp(i) = tim
-         bbxp(i) = .5*u*tsd
+         bbxp(i) = .5*u*self%continuous_source_duration
          bxp(i) = .9999*bbxp(i)
          betaxp(i) = sqrt(bbxp(i)*bbxp(i)-bxp(i)*bxp(i))/sr3
       endif
       rtcm = (1.-cm)/cm
       cmp(i) = 1./(1.+xir*xir*rtcm)
-      cvp(i) = wmae*cmp(i)/(wms+(wmae-wms)*cmp(i))
+      cvp(i) = self%ambient_air_molecular_weight*cmp(i)/(self%source_gas_molecular_weight
+     1        +(self%ambient_air_molecular_weight-self%source_gas_molecular_weight)*cmp(i))
       cmdap(i) = (1.-cmp(i))*cmdaa
       cmwp(i) = (1.-cmp(i))*cmwa
       rhop(i) = -1.
@@ -1340,25 +1414,26 @@ c ========================================
       ft = 0.
 
       r0 = r
-      srug = .5*alfg*grav*(rho-rhoa)*bb*h*h
+      srug = .5*alfg*self%gravitational_constant
+     1     * (rho-self%ambient_air_density)*bb*h*h
       sru0 = r*(u-(1.-cm)*uab) + srug
-      delu = (rhoa/rho)*abs(uab-u)
+      delu = (self%ambient_air_density/rho)*abs(uab-u)
       if (htp .gt. h) then
          ubs20 = uastr2
          ustr2 = uastr2 + cf1*delu*delu
         else
-         umgs = (uastr/uab)*u
+         umgs = (self%ambient_friction_velocity/uab)*u
          ubs20 = umgs*umgs
          ustr2 = ubs20 + cf1*delu*delu
       endif
-      uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uah = uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       w = (urf/uah)* aa*xk*sqrt(ustr2)
       wp(msfm) = w
 
-      if (ala .lt. 0.) then
-         stby = 1.-rcf*10.*ala
+      if (self%inverse_length .lt. 0.) then
+         stby = 1.-rcf*10.*self%inverse_length
         else
-         stby = 1./(1.+rcf*10.*ala)
+         stby = 1./(1.+rcf*10.*self%inverse_length)
       endif
       atot = afa*stby
       rab = .5*sigb/atot
@@ -1376,7 +1451,8 @@ c  go to nearfield region calculation
          idpf = 2
          nxi = msfm + 1
          rho0 = rho
-         r = .25*qs*tsd/cm
+         r = .25*self%mass_source_rate
+     1     * self%continuous_source_duration/cm
          r0 = r
          rmi = 0.
          bbx = r/(rho*bb*h)
@@ -1400,7 +1476,7 @@ c  go to nearfield region calculation
 
          if (xffm .lt. (2.*xp(msfm))) xffm = 2.*xp(msfm)
          ngam = log10((xffm/xp(msfm))-1.) + 1.
-         nstp = nssm*mnfm
+         nstp = self%num_calculation_substeps*mnfm
          anstp = nstp
          gam = 10.**(ngam/anstp)
          dx = (gam-1.)*(xffm-xp(msfm))/((gam**nstp)-1.)
@@ -1433,7 +1509,7 @@ c ================
       if(xffm.lt.(2.*xp(msfm))) xffm = 2.*xp(msfm)
 
       angam = log10((xffm/xp(msfm))-1.) + 1.
-      nstp = nssm*mnfm
+      nstp = self%num_calculation_substeps*mnfm
       anstp = nstp
       gam = 10.**(angam/anstp)
       dx = (gam-1.) * (xffm-xp(msfm))/((gam**nstp)-1.)
@@ -1444,7 +1520,7 @@ c ===============================================
 
       do 675 nx=nxi,mffm
 
-      do 660 ns = 1,nssm
+      do 660 ns = 1,self%num_calculation_substeps
 
       do i=1,11
         sum(i) = 0.
@@ -1461,7 +1537,7 @@ c ===============================================
 
       do 655 k=1,4
 
-      call slope
+      call slope(self)
 
       do 650 j=1,11
 
@@ -1478,10 +1554,10 @@ c ===============================================
 
   650 continue
 
-      call solve
-      call thermo
-      call eval
-      call entran
+      call solve(self)
+      call thermo(self)
+      call eval(self)
+      call entran(self)
 
   655 continue
 
@@ -1505,9 +1581,10 @@ c ===============================================
          alfg = 0.
          srug = 0.
         else
-         if (rho .gt. rhoa) then
+         if (rho .gt. self%ambient_air_density) then
             alfg = .25
-            srug = .5*alfg*grav*(rho-rhoa)*bb*h*h
+            srug = .5*alfg*self%gravitational_constant
+     1 *(rho-self%ambient_air_density)*bb*h*h
            else
             alfg = 0.
             srug = 0.
@@ -1528,9 +1605,9 @@ c ===============================================
   660 continue
 
       xccp(nx) = x
-      tccp(nx) = (qint+qint)/qs
+      tccp(nx) = (qint+qint)/self%mass_source_rate
 
-      call store
+      call store(self)
 
       if(qint .lt. hqtcs) then
           go to 675
@@ -1540,7 +1617,9 @@ c ===============================================
           nxi = nx+1
           dt = dx/u
           rho0 = rho
-          r = .25*qs*tsd/cm
+          r = .25 * self%mass_source_rate
+     1      * self%continuous_source_duration
+     1      / cm
           r0 = r
           rmi = 0.
           bbx = r/(rho*bb*h)
@@ -1594,7 +1673,7 @@ c  initialization
 c ================
 
   700 nxi = 2
-      nstp = nssm*mffm
+      nstp = self%num_calculation_substeps*mffm
       anstp = nstp
       ttst = .1*(anstp-1.)
       if(tffm .gt. ttst) then
@@ -1615,7 +1694,7 @@ c ================
       x = 0.
       xp(1) = 0.
       timp(1) = 0.
-      wse = ws
+      wse = self%vertical_vapor_velocity
 
       vg = 0.
       vg0 = 0.
@@ -1638,22 +1717,22 @@ c ================
       fw = 0.
       fug = 0.
 
-      bb = bs
+      bb = self%source_half_width
       bb0 = bb
       bbp(1) = bb
       bbv = bb
       bbv0 = bb
-      b = .9*bs
+      b = .9*self%source_half_width
       b0 = b
       bp(1) = b
-      bv = .9*bs
+      bv = .9*self%source_half_width
       bv0 = bv
-      bbx = bs
+      bbx = self%source_half_width
       bbx0 = bbx
       bbxp(1) = bbx
       bbvx = bbx
       bbvx0 = bbx
-      bx = .9*bs
+      bx = .9*self%source_half_width
       bx0 = bx
       bxp(1) = bx
       bvx = bx
@@ -1662,11 +1741,11 @@ c ================
       betaxp(1) = sqrt(bbx*bbx-bx*bx)/sr3
 
       z1 = sr3*aa*xk*xk*urf*dt
-      z2 = sqrt(2.*z1*z0)
-      he = (2.*z2)/log(1.+z2/z0)
+      z2 = sqrt(2.*z1*self%surface_roughness_height)
+      he = (2.*z2)/log(1.+z2/self%surface_roughness_height)
       do 708 i=1,5
-      fhz = log(1.+he/z0)
-      shz = he + z0
+      fhz = log(1.+he/self%surface_roughness_height)
+      shz = he + self%surface_roughness_height
       he = he - (shz*fhz - he - z1)/fhz
   708 continue
       w = he/(sr3*dt)
@@ -1676,7 +1755,7 @@ c ================
       vx = 0.
       vxp(1) = vx
 
-      h = hs
+      h = self%source_height
       h0 = h
       hp(1) = h
       htp = h
@@ -1694,24 +1773,24 @@ c ================
       do 710 i=1,5
       h1 = h1 + dh
       h2 = h2 + dh
-      u1 = uafn(h1,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = uafn(h1,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = uafn(h2,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   710 continue
-      uab = (uastr/xk)*(uab-u2)/30.
-      al = ala
+      uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
+      al = self%inverse_length
       if (al .lt. 0.)  then
          stby = 1.-rcf*10.*al
         else
          stby = 1./(1.+rcf*10.*al)
       endif
-      uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
-      w = (urf/uah)*aa*xk*uastr
+      uah = uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      w = (urf/uah)*aa*xk*self%ambient_friction_velocity
       wp(1) = w
       atot = afa*stby
       rab = .5*sigb/atot
       va = atot*uab/(1.+rab*bb/sr3)
-      delu = (uab-u)*(rhoa/rho)
+      delu = (uab-u)*(self%ambient_air_density/rho)
       vjp = aa*xk*delu
       v = sqrt(va*va+cf1*vjp*vjp)
       vp(1) = v
@@ -1722,7 +1801,7 @@ c ================
       uab0 = uab
       uap(1) = uab
 
-      r0 = .25*qtis
+      r0 = .25*self%instantaneous_source_mass
       rmi = r0
       sru0 = 0.
 
@@ -1743,9 +1822,9 @@ c ========================================
 
   730 do 775 nx=nxi,mffm
 
-      do 765 ns=1,nssm
-      if (tim .lt. tsd) then
-         wss = ws
+      do 765 ns=1,self%num_calculation_substeps
+      if (tim .lt. self%continuous_source_duration) then
+         wss = self%vertical_vapor_velocity
          xstr = h/cf0
         else
          wss = 0.
@@ -1765,7 +1844,7 @@ c ========================================
       dxrk(4) = dt/6.
 
       do 745 k=1,4
-      call slopepf
+      call slopepf(self)
 
       do 740 j=1,15
 
@@ -1780,10 +1859,10 @@ c ========================================
 
   740 continue
 
-      call solvepf
-      call thermo
-      call evalpf
-      call entran
+      call solvepf(self)
+      call thermo(self)
+      call evalpf(self)
+      call entran(self)
 
   745 continue
 
@@ -1825,7 +1904,7 @@ c ========================================
       xccp(nx) = x
       tccp(nx) = tim
 
-      call store
+      call store(self)
 
   775 continue
 
@@ -1855,14 +1934,14 @@ c   steady state calc of timp
          txb = txt + xptr
          bxr = (bxtr-bxs0)/(xptr-xcc0)
          do 925 i=1,itr
-         timp(i) = tsd*(xp(i)+txt)/txb
+         timp(i) = self%continuous_source_duration*(xp(i)+txt)/txb
          bbxp(i) = bxs0 + bxr*(xccp(i)-xcc0)
          bxp(i) = .9999*bbxp(i)
          betaxp(i) = sqrt(bbxp(i)*bbxp(i)-bxp(i)*bxp(i))/sr3
   925    continue
       endif
 
-      if (idspl .eq. 1) then
+      if (self%spill_type .eq. 1) then
          do 930 i=1,5
          timp(i) = timp(12-i)
   930    continue
@@ -1870,14 +1949,14 @@ c   steady state calc of timp
 
 c  write instantaneous spatially averaged cloud parameters
 
-      call edits
+      call edits(self)
 
 c  calculate and write time averaged volume concentration
 c   concentration contour parameters
 c   concentration in the zp(i) plane
 c   maximum concentration along centerline
 
-      call editcc
+      call editcc(self)
 
       go to 110
       end
@@ -1953,54 +2032,55 @@ c
 
 
 
-      subroutine slope
+      subroutine slope(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the gradients used in the steady state plume conservation
 c   equations
 c
-      integer :: idspl,nx,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       ! local variables
       real(4) :: rqs,vhwb
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
 
 c  mass equation
@@ -2008,15 +2088,15 @@ c  mass equation
       if (x .ge. bse) then
          rqs = 0.
       else
-         rqs = .25*qs/bse
+         rqs = .25*self%mass_source_rate/bse
       endif
 
       vhwb = sr3*(v*h + w*bb)
-      f(1) = rhoa*vhwb + rqs
+      f(1) = self%ambient_air_density*vhwb + rqs
 
 c  half-width equation
 
-      f(2) = (sr3*(rhoa/rho)*v + vg)/u
+      f(2) = (sr3*(self%ambient_air_density/rho)*v + vg)/u
 
 c  b parameter equation
 
@@ -2024,7 +2104,8 @@ c  b parameter equation
 
 c  crosswind velocity equation
 
-      f(4) = alfgv*grav*(rho-rhoa)*h*h
+      f(4) = alfgv*self%gravitational_constant
+     1     *(rho-self%ambient_air_density)*h*h
       f(10) = fv
 
 c  temperature flux equation
@@ -2037,7 +2118,8 @@ c  downwind velocity flux equation
 
 c  vertical velocity equation
 
-      f(7) = -grav*(rho-rhoa)*bb*h
+      f(7) = -self%gravitational_constant
+     1     *(rho-self%ambient_air_density)*bb*h
       f(11) = fw
 
 c  center height equation
@@ -2055,79 +2137,78 @@ c  released mass in cloud
 
 
 
-      subroutine slopepf
+      subroutine slopepf(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the gradients used in the transient puff convervation
 c    equations
 c
-      integer :: idspl,nx,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
-      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
-     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
-     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
-     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp,rhop,cmp,tp,cvp,betap,xp,cmwvp
+      real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp,bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       ! local variables
-      real(4) :: atau,cpsl,cpwl,fgrv,rqs,vhwb
+      real(4) :: atau,fgrv,rqs,vhwb
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c  mass and downwind cloud center equations
 
-      if(tim .ge. tsd) then
+      if(tim .ge. self%continuous_source_duration) then
           rqs = 0.
           wss = 0.
           atau = 0.
         else
-          rqs =.25*qs
-          wss = ws
+          rqs =.25*self%mass_source_rate
+          wss = self%vertical_vapor_velocity
           if (r .gt. 0.) then
              atau = rqs/r
             else
@@ -2136,19 +2217,19 @@ c  mass and downwind cloud center equations
       endif
 
       vhwb = sr3*((vx*bb+v*bbx)*h + w*bb*bbx)
-      f(1) = rhoa*vhwb + rqs
+      f(1) = self%ambient_air_density*vhwb + rqs
       f(2) = u-atau*x
 
 c  half-width equation
 
-      f(3) = sr3*(rhoa/rho)*v + vg
+      f(3) = sr3*(self%ambient_air_density/rho)*v + vg
 
 c  b parameter equation
 
       f(4) = (vg*b)/bb
 
 c  half-length equation
-      f(5) = sr3*(rhoa/rho)*vx + ug
+      f(5) = sr3*(self%ambient_air_density/rho)*vx + ug
 
 c  bx parameter equation
 
@@ -2156,7 +2237,8 @@ c  bx parameter equation
 
 c  crosswind velocity equations
 
-      fgrv = alfgv*grav*(rho-rhoa)*h*h
+      fgrv = alfgv*self%gravitational_constant
+     1     *(rho-self%ambient_air_density)*h*h
 
       f(7) = fgrv*bbx
       f(13) = fv
@@ -2173,7 +2255,8 @@ c  downwind velocity flux equation
 
 c  vertical velocity equation
 
-      f(11) = -grav*(rho-rhoa)*bb*bbx*h
+      f(11) = -self%gravitational_constant
+     1      *(rho-self%ambient_air_density)*bb*bbx*h
       f(15) = fw
 
 c  center height equation
@@ -2187,65 +2270,67 @@ c  center height equation
 
 
 
-      subroutine solve
+      subroutine solve(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c  solves the steady state plume conservation equations
-      integer :: idspl,nx,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: nzpm,zp,
+     1           xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       ! local variables
-      real(4) :: cpsl,cpwl,zcmx
+      real(4) :: zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       r = r0 + dy(1)
@@ -2270,67 +2355,69 @@ c  solves the steady state plume conservation equations
 
 
 
-      subroutine solvepf
+      subroutine solvepf(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c
 c  solves the transient puff conservation equations
 c
-      integer :: idspl,nx,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: nzpm,zp,
+     1           xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       ! local variables
-      real(4) :: cpsl,cpwl,zcmx
+      real(4) :: zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       r = r0 + dy(1)
@@ -2360,94 +2447,99 @@ c
 
 
 
-      subroutine thermo
+      subroutine thermo(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the thermodynamic properties
 c
-      integer :: idspl,nx,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
-      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
-     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
-     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
-     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp
+      real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
+      real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
+      real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: nzpm,zp
+      real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       integer :: idpf,nxtr
 
       ! local variables
       real(4) :: ab2,ac,alfm,alfs,alfw,betm,cmda,cmeds,cmevt,cmwd,cmwds,
      1           cmwvm,cmevm,cmevs,cmevsc,cmevspr,cmwvs,cmwvsc,cmwvspr,
-     1           cmwvt,cpsl,cpstr,cpwl,dhe0,dhet,dhw0,dhwt,dlti,dltm,
+     1           cmwvt,cpstr,dhe0,dhet,dhw0,dhwt,dlti,dltm,
      1           dtstr,etrn,ffpr,fft,fftt,gfnc,gfncp,ggt,ggtt,pe,pw,
      1           tesrt,tstr,tstr1,tstra,twsrt,sfte,sqs
       
       integer :: i,icyc,ie,irep,iw
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       if(idpf .eq. 2) then
-        if(timn .gt. tsd) then
-            sqs = .25*qs*tsd
+        if(timn .gt. self%continuous_source_duration) then
+            sqs = .25
+     1          * self%mass_source_rate
+     1          * self%continuous_source_duration
          else
-            sqs = .25*qs*timn
+            sqs = .25*self%mass_source_rate*timn
          endif
          cm = (rmi+sqs)/r
       else
          if(xn .gt. bse) then
-            sqs = .5*qs
+            sqs = .5*self%mass_source_rate
          else
-            sqs = .25*qs*(bse+xn)/bse
+            sqs = .25*self%mass_source_rate*(bse+xn)/bse
          endif
          cm = sqs/r
       endif
 
-      cv = (wmae*cm)/(wms+(wmae-wms)*cm)
+      cv = (self%ambient_air_molecular_weight*cm)/(self%source_gas_molecular_weight
+     1     +(self%ambient_air_molecular_weight-self%source_gas_molecular_weight)*cm)
 
       cmw = (1.-cm)*cmwa
       cmda = (1.-cm)*(1.-cmwa)
@@ -2458,27 +2550,38 @@ c
       cmwd = cmw-cmwv
       cmed = cm-cmev
 
-      dhe0 = dhe + tbp*(cpsl-cps)
+      dhe0 = self%heat_of_vaporization 
+     1     + self%boiling_point_temperature
+     1     *(self%liquid_heat_capacity-self%vapor_heat_capacity)
       dhw0 = dhw + 298.2*(cpwl-cpwv)
 
-      cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl + cmev*cps + cmed*cpsl
+      cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl
+     1   + cmev*self%vapor_heat_capacity 
+     1   + cmed*self%liquid_heat_capacity
 
       if (sft .eq. 0.) then
          sfte = 0.
         else
-         sfte = -cp0*(t0-ta)*abs(sft)/(abs(sft) + r0*cp0*abs(t0-ta))
+         sfte = -cp0*(t0-self%ambient_temperature)*abs(sft)/(abs(sft) + r0*cp0*abs(t0-self%ambient_temperature))
       endif
 
-      etrn = (1.-cm)*cpaa*ta + cm*cps*ts
-     1 + (r0/r)*(cp0*t0-(1.-cm0)*cpaa*ta-cm0*cps*ts + sfte)
+      etrn = (1.-cm)*self%ambient_air_heat_capacity*self%ambient_temperature 
+     1     + cm*self%vapor_heat_capacity
+     1     * self%source_gas_temperature
+     1 + (r0/r)*(cp0*t0-(1.-cm0)
+     1 *self%ambient_air_heat_capacity*self%ambient_temperature-cm0*self%vapor_heat_capacity
+     1 *self%source_gas_temperature + sfte)
 
       t = etrn/cp
 
-      alfm = wmae*(cmda/wma + cmwv/wmw + cmev/wms)
-      fft = exp(spa-spb/(t+spc))
+      alfm = self%ambient_air_molecular_weight*(cmda/wma + cmwv/wmw 
+     1     + cmev/self%source_gas_molecular_weight)
+      fft = exp(self%press_sat_const_a 
+     1    - self%press_sat_const_b 
+     1    / (t + self%press_sat_const_c))
       ggt = exp(spaw-spbw/t)
-      pw = (wmae*cmw)/(alfm*wmw)
-      pe = (wmae*cm)/(alfm*wms)
+      pw = (self%ambient_air_molecular_weight*cmw)/(alfm*wmw)
+      pe = (self%ambient_air_molecular_weight*cm)/(alfm*self%source_gas_molecular_weight)
 
       ie = 0
       iw = 0
@@ -2491,19 +2594,29 @@ c
       if ((ie+iw) .eq. 2) go to 70
 
       if (ie .eq. 1)  go to 5
-      ffpr = (spb*fft)/((t+spc)*(t+spc))
+      ffpr = (self%press_sat_const_b * fft) 
+     1     / ((t +  self%press_sat_const_c) 
+     1     *  (t +  self%press_sat_const_c))
       if (fft .gt. 1.)  then
-         fft = 1. + spa*(t-tbp)/(tbp+spc)
-         ffpr = spa/(tbp+spc)
+         fft = 1. + self%press_sat_const_a
+     1       * (t-self%boiling_point_temperature)
+     1       / (self%boiling_point_temperature
+     1       +  self%press_sat_const_c)
+         ffpr = self%press_sat_const_a
+     1        / (self%boiling_point_temperature 
+     1        +  self%press_sat_const_c)
       endif
-      alfs = wms*(cmda/wma + cmwv/wmw)
+      alfs = self%source_gas_molecular_weight
+     1     *(cmda/wma + cmwv/wmw)
       ab2 = .5*((1.-fft)/ffpr + (dhe0/cp)*(alfs+cmevt))
       ac = dhe0*(alfs - (1.-fft)*cmevt)/(cp*ffpr)
       dlti = ab2 - sqrt(ab2*ab2 + ac)
       dltm = dhe0*(cmevt-cm)/cp
       dlti = amax1(dltm,dlti)
       t = t + dlti
-      fft = exp(spa - spb/(t+spc))
+      fft = exp(self%press_sat_const_a 
+     1    - self%press_sat_const_b 
+     1    / (t +  self%press_sat_const_c))
       ggt = exp(spaw - spbw/t)
     5 continue
 
@@ -2517,14 +2630,25 @@ c
    10 do 30 i=1,15
       if (ie .eq. 0) then
         cmwvm = amin1(cmwvs,cmw)
-        alfs = wms*(cmda/wma + cmwvm/wmw)
+        alfs = self%source_gas_molecular_weight*(cmda/wma + cmwvm/wmw)
         fftt = cm/(cm+alfs)
         if (fft .lt. fftt) then
            cmevs = alfs*fft/(1.-fft)
-           cmevspr = spb*cmevs/((1.-fft)*(tstr+spc)*(tstr+spc))
+           cmevspr = self%press_sat_const_b 
+     1             * cmevs 
+     1             / ((1. - fft)
+     1             * (tstr + self%press_sat_const_c) 
+     1             * (tstr + self%press_sat_const_c))
           else
-           tesrt = spb/(spa-log(fftt)) - spc
-           cmevspr = spb*cm/((1.-fftt)*(tesrt+spc)*(tesrt+spc))
+           tesrt = self%press_sat_const_b
+     1           / (self%press_sat_const_a-log(fftt)) 
+     1           -  self%press_sat_const_c
+           cmevspr = self%press_sat_const_b
+     1             * cm / ((1.-fftt)
+     1             * (tesrt 
+     1             + self%press_sat_const_c)
+     1             * (tesrt 
+     1             + self%press_sat_const_c))
            cmevs = cmevspr*(tstr-tesrt) + cm
         endif
        else
@@ -2534,7 +2658,7 @@ c
 
    20 if (iw .eq. 0) then
         cmevm = amin1(cmevs,cm)
-        alfw = wmw*(cmda/wma + cmevm/wms)
+        alfw = wmw*(cmda/wma + cmevm/self%source_gas_molecular_weight)
         ggtt = cmw/(cmw+alfw)
         if (ggt .lt. ggtt) then
            cmwvs = alfw*ggt/(1.-ggt)
@@ -2554,20 +2678,25 @@ c
 
       cmwds = cmw-cmwvm
       cmeds = cm-cmevm
-      cpstr = cmda*cpa + cmwvm*cpwv + cmwds*cpwl + cmevm*cps +
-     1 cmeds*cpsl
+      cpstr = cmda*cpa + cmwvm*cpwv + cmwds*cpwl 
+     1      + cmevm*self%vapor_heat_capacity +
+     1 cmeds*self%liquid_heat_capacity
       tstra = (etrn + dhw0*(cmwvt-cmwvs) + dhe0*(cmevt-cmevs))/cpstr
 
       gfnc = tstr - tstra
       dhwt = dhw0 + tstra*(cpwv-cpwl)
-      dhet = dhe0 + tstra*(cps-cpsl)
+      dhet = dhe0 + tstra*(self%vapor_heat_capacity
+     1     - self%liquid_heat_capacity)
       gfncp = 1. + (dhwt*cmwvspr + dhet*cmevspr)/cpstr
       tstr1 = tstr - gfnc/gfncp
 
       dtstr = abs(tstr1-tstra)
       tstr = tstr1
 
-      fft = exp(spa-spb/(tstr+spc))
+      fft = exp(
+     1          self%press_sat_const_a 
+     1        - self%press_sat_const_b/(tstr+ self%press_sat_const_c)
+     1         )
       ggt = exp(spaw-spbw/tstr)
 
       if (dtstr .lt. .001) go to 40
@@ -2575,12 +2704,13 @@ c
 
    40 cmwvm = amin1(cmwvs,cmw)
       cmevm = amin1(cmevs,cm)
-      alfm = wmae*(cmda/wma+cmwvm/wmw+cmevm/wms)
+      alfm = self%ambient_air_molecular_weight*(cmda/wma+cmwvm/wmw 
+     1     + cmevm/self%source_gas_molecular_weight)
 
       if (ie .eq. 1) then
          cmev = cm
         else
-         cmevs = alfm*wms*fft/wmae
+         cmevs = alfm * self%source_gas_molecular_weight*fft/self%ambient_air_molecular_weight
          if (cmevs .gt. cm) then
             cmev = cm
             ie = 1
@@ -2592,7 +2722,7 @@ c
       if (iw .eq. 1) then
          cmwv = cmw
         else
-         cmwvs = alfm*wmw*ggt/wmae
+         cmwvs = alfm*wmw*ggt/self%ambient_air_molecular_weight
          if (cmwvs .gt. cmw) then
             cmwv = cmw
             iw = 1
@@ -2604,13 +2734,18 @@ c
 
       cmwd = cmw-cmwv
       cmed = cm-cmev
-      alfm = (cmda/wma + cmwv/wmw + cmev/wms)*wmae
-      cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl + cmev*cps + cmed*cpsl
+      alfm = (cmda/wma + cmwv/wmw 
+     1     + cmev/self%source_gas_molecular_weight)*self%ambient_air_molecular_weight
+      cp = cmda*cpa + cmwv*cpwv + cmwd*cpwl 
+     1   + cmev*self%vapor_heat_capacity 
+     1   + cmed*self%liquid_heat_capacity
       t = (etrn+dhw0*(cmwvt-cmwv) + dhe0*(cmevt-cmev))/cp
 
       if (ie .eq. 1) then
-         fft = exp(spa-spb/(t+spc))
-         cmevsc = (alfm*wms*fft)/wmae
+         fft = exp(
+     1             self%press_sat_const_a
+     1            -self%press_sat_const_b/(t+ self%press_sat_const_c))
+         cmevsc = (alfm*self%source_gas_molecular_weight*fft)/self%ambient_air_molecular_weight
          if (cmevsc .lt. cm) then
             ie = 0
             icyc = 1
@@ -2619,7 +2754,7 @@ c
 
       if (iw .eq. 1) then
          ggt = exp(spaw-spbw/t)
-         cmwvsc = (alfm*wmw*ggt)/wmae
+         cmwvsc = (alfm*wmw*ggt)/self%ambient_air_molecular_weight
          if (cmwvsc .lt. cmw) then
             iw = 0
             icyc = 1
@@ -2629,8 +2764,9 @@ c
       if (icyc .eq. 0) go to 70
    65 continue
 
-   70 betm = (rhoa/rhowl)*cmwd + (rhoa/rhosl)*cmed
-      rho = rhoa*ta/(alfm*t + betm*ta)
+   70 betm = (self%ambient_air_density/rhowl)*cmwd 
+     1     + (self%ambient_air_density/self%source_liquid_density)*cmed
+      rho = self%ambient_air_density*self%ambient_temperature/(alfm*t + betm*self%ambient_temperature)
 
       return
       end
@@ -2639,77 +2775,80 @@ c
 
 
 
-      subroutine eval
+      subroutine eval(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the steady state plume velocities and height
 c
-      integer :: idspl,nx,keval,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx,keval
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
-      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
-     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
-     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
-     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp
+      real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
+      real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
+      real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: nzpm,zp
+      real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
       integer :: idpf,nxtr
 
       ! local variables
-      real(4) :: angl,cpsl,cpwl,ev,dluk,ew,gex,hhf,htph,rex,rex0,ru3,
+      real(4) :: angl,ev,dluk,ew,gex,hhf,htph,rex,rex0,ru3,
      1           u1,u12,u2,ut0,ut2,utg3,zcmx,sfue
       integer :: i
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c  coupled velocity, height and average ambient velocity calculation
 
 c   calculate downwind velocity
-      u1 = (uastr/xk)*uafn(htp0,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = (self%ambient_friction_velocity/xk)*uafn(htp0,self%surface_roughness_height,
+     1      ala0,zl,hmx,zt,cu1,cu2)
       u = u0
       bb = bb0+bbv-bbv0
       h = r/(rho*u*bb)
@@ -2739,8 +2878,8 @@ c   calculate downwind velocity
       endif
 
       htph = .5*(htp0 + htp)
-      u12 = (uastr/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (uastr/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
       if (uab .gt. u2)  uab = u2
 
@@ -2751,7 +2890,8 @@ c   calculate downwind velocity
       endif
 
       ut0 = uab*(1.-cm) + (sru0 + sfue)/r
-      utg3 = alfg * grav * (rho-rhoa)*r/(2.*bb*rho*rho)
+      utg3 = alfg * self%gravitational_constant *
+     1 (rho-self%ambient_air_density)*r/(2.*bb*rho*rho)
 
       if (utg3 .le. 0.) then
          ut2 = ut0
@@ -2780,7 +2920,8 @@ c   calculate downwind velocity
  1050 continue
  1052 continue
 
-      if ((h .lt. (zc+zc)) .and. ((alfg*rho) .gt. (alfg*rhoa))) then
+      if ((h .lt. (zc+zc)) 
+     1   .and. ((alfg*rho) .gt. (alfg*self%ambient_air_density))) then
          h = zc + zc
          u = r/(rho*bb*h)
       endif
@@ -2795,8 +2936,8 @@ c   calculate downwind velocity
          htp = h
       endif
       htph = .5*(htp0+htp)
-      u12 = (uastr/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (uastr/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
       if (uab .gt. u2)  uab = u2
 
@@ -2824,7 +2965,7 @@ c  calculate crosswind velocities
             endif
             wc = ew*(gw + r0*wc0)/r
            else
-            if (rho .gt. rhoa) then
+            if (rho .gt. self%ambient_air_density) then
                if (vg0 .eq. 0.) then
                   ev = 1.
                   vg0 = -2.*wc0*bb0/h0
@@ -2844,7 +2985,7 @@ c  calculate crosswind velocities
             endif
          endif
         else
-         if (rho .gt. rhoa) then
+         if (rho .gt. self%ambient_air_density) then
             if (vg0 .eq. 0.) then
                ev = 1.
               else
@@ -2864,74 +3005,76 @@ c  calculate crosswind velocities
 
 
 
-      subroutine evalpf
+      subroutine evalpf(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the transient puff velocities and height
 c
-      integer :: idspl,nx,keval,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx,keval
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
-      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
-     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
-     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
-     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp
+      real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
+      real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
+      real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: nzpm,zp
+      real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
-      real(4) :: cpsl,cpwl,eu,ev,ew,gex,gey,hhf,htph,rbxy,rex,rey,sfue
+      real(4) :: eu,ev,ew,gex,gey,hhf,htph,rbxy,rex,rey,sfue
       real(4) :: u1,u12,u2,zcmx
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c  coupled velocity, height and average ambient velocity calculation
 
-      u1 = (uastr/xk)*uafn(htp0,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = (self%ambient_friction_velocity/xk)*uafn(htp0,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       gey = bbx0*h0/(h0*(bbx0+bb0)+2.*bb0*bbx0)
       gex = (bb0/bbx0)*gey
       rey = (rho0/rho)**gey
@@ -2960,8 +3103,8 @@ c  coupled velocity, height and average ambient velocity calculation
       endif
 
       htph = .5*(htp0+htp)
-      u12 = (uastr/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (uastr/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
 
       if (sfu .eq. 0.) then
@@ -2984,7 +3127,7 @@ c  calculate crosswind velocities
           endif
           wc = ew*(gw + r0*wc0)/r
         else
-          if(rho .gt. rhoa) then
+          if(rho .gt. self%ambient_air_density) then
             if (vg0 .eq. 0.) then
                ev = 1.
                rbxy = bb0*bbx0/(bb0*bb0+bbx0*bbx0)
@@ -3021,83 +3164,85 @@ c  calculate crosswind velocities
 
 
 
-      subroutine entran
+      subroutine entran(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c
 c  calculates the entrainment rates and surface fluxes
 c
-      integer :: idspl,nx,keval,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx,keval
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: nzpm,zp,
+     1           xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
-      real(4) :: al,alah,atot,cf,delu,cpsl,cpwl,fgr,fpr,fprb,frzr,galc
+      real(4) :: al,alah,atot,cf,delu,fgr,fpr,fprb,frzr,galc
       real(4) :: hbt,htst,phiit,phiitb,phmr,rab,rhoef,sig,stby,tg,uah
       real(4) :: ubs,ubsi2,ugmhs2,uhs2,urho,ustr,ustr2,uts2,va,vax,vbar
       real(4) :: vmgs,vmhs2,vrho,vxs,wmhs2,zrf,vjp,tgt,ubar,ugmgs,umgs
       real(4) :: umhs2
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 
 c  vertical entrainment
 
       ubar = .5*ug
-      urho = ubar*rhoa/rho
+      urho = ubar*self%ambient_air_density/rho
       vbar = .5*vg
-      vrho = vbar*rhoa/rho
-      delu = (uab-u) * (rhoa/rho)
-      cf = uastr/uab
+      vrho = vbar*self%ambient_air_density/rho
+      delu = (uab-u) * (self%ambient_air_density/rho)
+      cf = self%ambient_friction_velocity/uab
       umgs = cf * u
       ugmgs = cf * ubar
       vmgs = cf * vbar
@@ -3110,26 +3255,29 @@ c  vertical entrainment
          ubsi2 = umgs*umgs + vmgs*vmgs + cws*wss*uab
       endif
       ubs2 = ubsi2
-      if (idspl .eq. 1)  then
+      if (self%spill_type .eq. 1)  then
          if (xn .gt. bse)  then
          ubs2 = ubsi2 + (ubs20-ubsi2)*exp((bse-xn)/xstr)
          endif
       endif
-      if (idspl .eq. 4)  then
-         if ((qs*timn) .gt. qtcs)  then
-         ubs2 = ubsi2 + (ubs20-ubsi2)*exp((tsd-timn)*u/xstr)
+      if (self%spill_type .eq. 4)  then
+         if ((self%mass_source_rate*timn) .gt. 
+     1        self%continuous_source_mass)  then
+         ubs2 = ubsi2 + (ubs20-ubsi2)
+     1        * exp((self%continuous_source_duration-timn)*u/xstr)
          endif
       endif
       ubs = sqrt(ubs2)
 
       vh = cf*ubs
-      tg = tgon*ta + (1.-tgon)*t
+      tg = tgon*self%ambient_temperature + (1.-tgon)*t
       if (htp .gt. h)  then
          uts2 = 0.
         else
          if (tg .gt. t) then
             tgt = .5*(tg+t)
-            uts2 = ((cth*grav*(tg-t)*vh*h/tgt)**tutrd)
+            uts2 = ((cth*self%gravitational_constant
+     1 *(tg-t)*vh*h/tgt)**tutrd)
            else
             uts2 = 0.
          endif
@@ -3139,7 +3287,8 @@ c  vertical entrainment
  2045 ustr2 = ubs2 + uhs2 + uts2
       ustr = sqrt(ustr2)
 
-      galc = cri*grav*(rho-rhoa)/rho
+      galc = cri*self%gravitational_constant
+     1     *(rho-self%ambient_air_density)/rho
       if (galc .lt. 0.) galc = 0.
       alah = ala0/(1.+htp/zl)
       al = (alah*uastr2+galc)/ustr2
@@ -3162,12 +3311,12 @@ c  vertical entrainment
             phiitb = 1. + 5.*hbt*al
          endif
       endif
-      uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uah = uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       w = (urf/uah)*aa*xk*ustr*(fpr/phiit + fprb/phiitb)
 
 c  horizontal entrainment
 
-      al = ala
+      al = self%inverse_length
       if(al .lt. 0.) then
          stby = 1.-rcf*10.*al
       else
@@ -3186,23 +3335,23 @@ c  horizontal entrainment
          sig = (h-zc)/sr3
       endif
       zrf = zc+.5*sig
-      frzr = zrf/(zrf+z0)
+      frzr = zrf/(zrf+self%surface_roughness_height)
       fgr = 1. -zrf/hmx
       if(stb .lt. 0.) then
           phmr = phimi + (1.-phimi)/sqrt(1.+phgam*zrf)
         else
           phmr = 1. + 5.*ala0*zrf/(1.+zrf/zl)
       endif
-      vxs = .6*uastr*frzr*phmr*fgr/xk
+      vxs = .6*self%ambient_friction_velocity*frzr*phmr*fgr/xk
       vax = atot*uab/(1.+rab*bbx/sr3)
       vx = sqrt(vax*vax+vxs*vxs)
 
 c  velocity and temperature fluxes
 
-      if (ala .lt. 0.) then
-         phiit = 1./sqrt(1.-16.*htp*ala)
+      if (self%inverse_length .lt. 0.) then
+         phiit = 1./sqrt(1.-16.*htp*self%inverse_length)
         else
-         phiit = 1. + 5.*htp*ala
+         phiit = 1. + 5.*htp*self%inverse_length
       endif
       umhs2 = cf1*abs(delu)*delu
       ugmhs2 = cf1*abs(urho)*urho
@@ -3232,68 +3381,67 @@ c  velocity and temperature fluxes
 
 
 
-      subroutine store
+      subroutine store(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c
 c  stores the output variables
 c
-      integer :: idspl,nx,keval,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx,keval
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
-      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
-     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
-     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
-     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp
+      real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
+      real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
+      real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: nzpm,zp
+      real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
-
-      ! Local variables
-      real(4) :: cpsl,cpwl
       
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       xp(nx) = x
@@ -3329,74 +3477,84 @@ c
 
 
 
-      subroutine editin
+      subroutine editin(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c  writes the input values used in the problem
-      integer :: idspl,nx,keval,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx,keval
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
-      real(4) :: vp,wp,hp,bbp,vgp,up,bp,
-     1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
-     1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
-     1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
-      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
-     1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
+      real(4) :: vp,wp,hp,bbp,vgp,up,bp
+      real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
+      real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
+      real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
+      real(4) :: nzpm,zp
+      real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
+      real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
+      real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0
+      real(4) :: wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
-      real(4) :: cpsl,cpwl
       integer :: i
-      !real(4) :: u1,u12,u2,zcmx
 
-
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c   release gas properties
 
-      write (3,101) wms,cps,ts,rhos,tbp,cmed,cpsl,dhe,rhosl,spa,spb,spc
+      write (3,101) self%source_gas_molecular_weight,
+     1              self%vapor_heat_capacity,
+     1              self%source_gas_temperature,
+     1              self%source_gas_density,
+     1              self%boiling_point_temperature,
+     1              cmed,
+     1              self%liquid_heat_capacity,
+     1              self%heat_of_vaporization,
+     1              self%source_liquid_density,
+     1              self%press_sat_const_a,
+     1              self%press_sat_const_b,
+     1               self%press_sat_const_c
 
   101 format (//'release gas properties'//,1p,
      1 ' molecular weight of source gas (kg)     ',10x,'- wms  =',e12.4/
@@ -3414,7 +3572,16 @@ c   release gas properties
 
 c   spill characteristics
 
-      write (3,102) idspl,qs,tsd,qtcs,qtis,as,ws,bs,hs,us
+      write (3,102) self%spill_type,
+     1              self%mass_source_rate,
+     1              self%continuous_source_duration,
+     1              self%continuous_source_mass,
+     1              self%instantaneous_source_mass,
+     1              self%source_area,
+     1              self%vertical_vapor_velocity,
+     1              self%source_half_width,
+     1              self%source_height,
+     1              self%horizontal_vapor_velocity
 
   102 format (//'spill characteristics'//,1p,
      1 ' spill type                              ',10x,'- idspl=',i12/
@@ -3443,7 +3610,18 @@ c   field parameters
 
 c   ambient meteorological variables
 
-      write (3,104) wmae,cpaa,rhoa,za,pa,ua,ta,rh,uastr,stab,ala,z0
+      write (3,104) self%ambient_air_molecular_weight,
+     1              self%ambient_air_heat_capacity,
+     1              self%ambient_air_density,
+     1              self%ambient_measurement_height,
+     1              self%ambient_atmospheric_pressure,
+     1              self%ambient_wind_speed,
+     1              self%ambient_temperature,
+     1              self%relative_humidity,
+     1              self%ambient_friction_velocity,
+     1              self%stability_class,
+     1              self%inverse_length,
+     1              self%surface_roughness_height
 
   104 format (//'ambient meteorological properties'//,1p,
      1 ' molecular weight of ambient air (kg)   ',10x,'- wmae  =',e12.4/
@@ -3463,7 +3641,9 @@ c   ambient meteorological variables
 
 c   additional parameters
 
-      write (3,105) ncalc,nssm,grav,rr,xk
+      write (3,105) self%substep_multiplier,
+     1 self%num_calculation_substeps,
+     1 self%gravitational_constant,self%gas_constant,xk
 
   105 format(//'additional parameters'//,1p,
      1 ' sub-step multiplier                    ',10x,'- ncalc =',i12/
@@ -3479,67 +3659,68 @@ c   additional parameters
 
 
 
-      subroutine edits
+      subroutine edits(self)
+      use slab_data, only: SlabData
+      type(SlabData) :: self
 c  writes the instantaneous spatially averaged cloud properties
-      integer :: idspl,nx,ncalc,nssm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,nzpm,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: nzpm,zp,
+     1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
+      real(4) :: dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1           wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       
       ! Local variables
-      real(4) :: cpsl,cpwl
       integer :: i
 
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
 
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
       write (3,95)
@@ -3566,33 +3747,37 @@ c  writes the instantaneous spatially averaged cloud properties
 
 
 
-      subroutine editcc
+      subroutine editcc(self)
+      use slab_data, only: SlabData
+      implicit none
+
+      type(SlabData) :: self
 c  calculates and writes the time averaged volume concentration
-      integer :: idspl,nx,keval,ncalc,nssm,nzpm
-      real(4) :: sr3,third,f227,dbt,utst,wse,bs,bse
+      integer :: nx,keval,nzpm
+      real(4) :: sr3,third,f227,dbt,utst,wse,bse
       real(4) :: bb0,b0,r0,utm3,utc3,sft,htp,htp0
       real(4) :: h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      real(4) :: wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
-      real(4) :: alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp
+      real(4) :: alfg,alfgv,h0,vg0,wcp
       real(4) :: zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap
-      real(4) :: gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: za,ta,ua,z0,wms,cps,ts,zp,
-     1           as,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: zp,
+     1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
-     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1           cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1           wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1           qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1           dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1           wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
       integer :: idpf,nxtr
 
       ! Local variables
@@ -3600,38 +3785,38 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: rlg,rm3,rit,rjt,rav,rav2,htpp,hdsig,hhf
       real(4) :: gzi,gzip,facd,facn,erfy2,erfy1,ezi,erfx1
       real(4) :: erfx2,erfcy1,erfcy2,erfcx1,erfcx2
-      real(4) :: epy1,epy2,epx1,epx2,cpwl,cvbrx,cc1
-      real(4) :: afata,ak,asig,cpsl,betac2
+      real(4) :: epy1,epy2,epx1,epx2,cvbrx,cc1
+      real(4) :: afata,ak,asig,betac2
       integer :: i,ii,in,j,k,nzpm1
       
-      common sr3,third,f227,dbt,utst,wse,bs,bse,nssm
-      common bb0,b0,r0,utm3,utc3,sft,htp,htp0,ncalc
+      common sr3,third,f227,dbt,utst,wse,bse
+      common bb0,b0,r0,utm3,utc3,sft,htp,htp0
       common h,bb,b,beta,r,g,vg,v,w,cm,u,t,rho,cv,xn,x
-      common wma,cpa,grav,rhoa,rhos,pa,rr,qs,ws,hrf,urf
+      common wma,cpa,hrf,urf
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
-      common idspl,nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
+      common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
-      common alfg,alfgv,h0,tsd,qtcs,qtis,hs,us,stab,vg0,wcp(61)
+      common alfg,alfgv,h0,vg0,wcp(61)
       common zc,zc0,wc,wc0,sru0,rho0,bbv,bbv0,bv,bv0,dbbx,cmdap(61)
-      common gw,fw,cp,facss,facp1,facp2,tbp,sfx,sfy,sfz
+      common gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
 
       common/var/vp(61),wp(61),hp(61),bbp(61),vgp(61),up(61),bp(61),
      1 rhop(61),cmp(61),tp(61),cvp(61),betap(61),xp(61),cmwvp(61),
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common za,ta,ua,z0,wms,cps,ts,nzpm,zp(5),
-     1 as,xffm,tav,msfm,mnfm,mffm,tffm
+      common nzpm,zp(5),
+     1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1 ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
-     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpaa,cpwv,cpwl,
-     1 cpsl,dhw,dhe,cmdaa,cmwa,rhosl,spa,spb,spc,spaw,spbw,t0,
-     1 wmae,wmw,rhowl,cmw,cmw0,cmed,rh,tau0,tgon
+     1 qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl,
+     1 dhw,cmdaa,cmwa,spaw,spbw,t0,
+     1 wmw,rhowl,cmw,cmw0,cmed,tau0,tgon
 
 
 c  calculate time averaged volume concentration
@@ -3645,18 +3830,19 @@ c   betap(i) = half width parameter beta
 c   betacp(i) = effective beta with meander
 
       tcmx = 2.*bbxp(61)/up(61)
-      tcld(61) = amax1(tcmx,tsd)
+      tcld(61) = amax1(tcmx,self%continuous_source_duration)
       do 10 i=2,60
       in = 62-i
       tcmx = 2.*bbxp(in)/up(in)
-      tcld(in) = amax1(tsd,amin1(tcld(in+1),tcmx))
+      tcld(in) = amax1(self%continuous_source_duration,
+     1                 amin1(tcld(in+1),tcmx))
    10 continue
       tcld(1) = tcld(2)
 
-      if (ala .lt. 0.) then
-         stby = 1.-rcf*10.*ala
+      if (self%inverse_length .lt. 0.) then
+         stby = 1.-rcf*10.*self%inverse_length
         else
-         stby = 1./(1.+rcf*10.*ala)
+         stby = 1./(1.+rcf*10.*self%inverse_length)
       endif
       asig = 2.*afa*stby/sigb
 
@@ -3673,9 +3859,9 @@ c   betacp(i) = effective beta with meander
       rav2 = rav*rav
       sig0 = asig*(sqrt(1.+sigb*(xp(i)-xp(1)))-1.)
       rjt = 1.
-      if (idspl .eq. 2)  then
-         rm3 = ((rhoa*uap(i)*(1.-cmp(i)))/(rhos*us*cmp(i)))
-     1         **(1./3.)
+      if (self%spill_type .eq. 2)  then
+         rm3 = ((self%ambient_air_density*uap(i)*(1.-cmp(i))) / 
+     1  (self%source_gas_density*self%horizontal_vapor_velocity*cmp(i)))**(1./3.)
          rlg = log((1.-rm3+(rm3*rm3))/((1.+rm3)*(1.+rm3)))
          rit = atan(((2.*rm3)-1.)/sr3) + atan(1./sr3)
          if (rm3 .lt. .1)  then
@@ -3705,7 +3891,7 @@ c   betacp(i) = effective beta with meander
       endif
 
       if (i .lt. nxtr) then
-          cvbrx = amin1(tsd/tav,1.0)
+          cvbrx = amin1(self%mass_source_rate/tav,1.0)
           fcx(i) = facss*bbp(i)*hdsig*cvbrx*cvp(i)/bp(i)
         else
           epx1 = (bxp(i) + .5*up(i)*tav)/(sr2*betaxp(i))
@@ -3797,7 +3983,7 @@ c   betacp(i) = effective beta with meander
 
 c  write the concentration contour parameters
 
-      if (idspl .eq. 4) then
+      if (self%spill_type .eq. 4) then
 
       write (3,105) tav
   105 format ('1'//'time averaged (tav =',f6.0,' s) volume',
