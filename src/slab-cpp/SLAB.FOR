@@ -162,7 +162,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,zp,
+      real(4) :: ta,z0,zp,
      1           xffm,tav,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -213,7 +213,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -271,7 +271,7 @@ c  ============
   110 read (2,108) z0
        if(z0 .lt. 0.) return
 
-      read (2,108) self%ambient_measurement_height, ua,ta,rh,stab
+      read (2,108) self%ambient_measurement_height,self%ambient_wind_speed,ta,rh,stab
       stabin = stab
 
 c ================================
@@ -367,7 +367,7 @@ c =============
      1 '  tsd   =',f10.0/'  qtis  =',f10.2/'  hs    =',f10.2/
      1 '  tav   =',f10.2/'  xffm  =',f10.2/('  zp(',i1,') =',f10.2))
 
-      write (3,115) z0,self%ambient_measurement_height,ua,ta,rh,stabin
+      write (3,115) z0,self%ambient_measurement_height,self%ambient_wind_speed,ta,rh,stabin
   115 format ('  z0    =',f10.6/'  za    =',f10.2/'  ua    =',f10.2/
      1 '  ta    =',f10.2/,'  rh    =',f10.2/,'  stab  =',f10.2)
 
@@ -548,7 +548,7 @@ c  initialize velocity function
 
 c  calculatre friction velocity
 
-      uastr = xk*ua/uafn(self%ambient_measurement_height,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uastr = xk*self%ambient_wind_speed/uafn(self%ambient_measurement_height,z0,ala0,zl,hmx,zt,cu1,cu2)
       uastr2 = uastr*uastr
       uaz2 = (uastr/xk)*uafn(2.,z0,ala0,zl,hmx,zt,cu1,cu2)
       tffm = xffm/uaz2
@@ -977,7 +977,7 @@ c ============================
   290 stby = 1. - rcf*10.*al
       go to 292
   291 stby = 1./(1.+rcf*10.*al)
-  292 v = afa*stby*ua
+  292 v = afa*stby*self%ambient_wind_speed
       vp(1) = v
       vx = 0.
       vxp(1) = 0.
@@ -2043,7 +2043,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: ta,z0,nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
@@ -2146,7 +2146,7 @@ c
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp,bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: ta,z0,nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
@@ -2176,7 +2176,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2278,7 +2278,7 @@ c  solves the steady state plume conservation equations
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp,
+      real(4) :: ta,z0,nzpm,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
@@ -2309,7 +2309,7 @@ c  solves the steady state plume conservation equations
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2365,7 +2365,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp,
+      real(4) :: ta,z0,nzpm,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
@@ -2396,7 +2396,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2457,7 +2457,7 @@ c
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp
+      real(4) :: ta,z0,nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -2496,7 +2496,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2785,7 +2785,7 @@ c
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp
+      real(4) :: ta,z0,nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -2820,7 +2820,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3014,7 +3014,7 @@ c
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp
+      real(4) :: ta,z0,nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -3047,7 +3047,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3173,7 +3173,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp,
+      real(4) :: ta,z0,nzpm,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -3209,7 +3209,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3390,7 +3390,7 @@ c
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp
+      real(4) :: ta,z0,nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -3419,7 +3419,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3484,7 +3484,7 @@ c  writes the input values used in the problem
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp
+      real(4) :: ta,z0,nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -3516,7 +3516,7 @@ c  writes the input values used in the problem
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3600,7 +3600,7 @@ c   ambient meteorological variables
      1              self%ambient_air_density,
      1              self%ambient_measurement_height,
      1              self%ambient_atmospheric_pressure,
-     1              ua,
+     1              self%ambient_wind_speed,
      1              ta,
      1              rh,
      1              uastr,
@@ -3666,7 +3666,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,nzpm,zp,
+      real(4) :: ta,z0,nzpm,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
@@ -3698,7 +3698,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3756,7 +3756,7 @@ c  calculates and writes the time averaged volume concentration
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: ta,ua,z0,zp,
+      real(4) :: ta,z0,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -3794,7 +3794,7 @@ c  calculates and writes the time averaged volume concentration
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common ta,ua,z0,nzpm,zp(5),
+      common ta,z0,nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
