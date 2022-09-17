@@ -41,7 +41,7 @@ type SlabData
   real(4) :: ambient_wind_speed
   real(4) :: ambient_temperature
   real(4) :: relative_humidity
-  ! real(4) :: ambient_friction_velocity
+  real(4) :: ambient_friction_velocity
   ! real(4) :: atmospheric_stability_class_value
   ! real(4) :: inverse_monin_obukhov_length
   ! real(4) :: surface_roughness_height

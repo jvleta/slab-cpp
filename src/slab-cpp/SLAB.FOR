@@ -151,7 +151,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -200,7 +200,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -377,7 +377,7 @@ c =============
      1              self%ambient_temperature,
      1              self%relative_humidity,
      1              stabin
-     
+
   115 format ('  z0    =',f10.6/'  za    =',f10.2/'  ua    =',f10.2/
      1 '  ta    =',f10.2/,'  rh    =',f10.2/,'  stab  =',f10.2)
 
@@ -559,11 +559,11 @@ c  initialize velocity function
 
 c  calculatre friction velocity
 
-      uastr = xk*self%ambient_wind_speed/uafn(self%ambient_measurement_height,z0,ala0,zl,hmx,zt,cu1,cu2)
-      uastr2 = uastr*uastr
-      uaz2 = (uastr/xk)*uafn(2.,z0,ala0,zl,hmx,zt,cu1,cu2)
+      self%ambient_friction_velocity = xk*self%ambient_wind_speed/uafn(self%ambient_measurement_height,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uastr2 = self%ambient_friction_velocity*self%ambient_friction_velocity
+      uaz2 = (self%ambient_friction_velocity/xk)*uafn(2.,z0,ala0,zl,hmx,zt,cu1,cu2)
       tffm = xffm/uaz2
-      cf0 = uastr/uaz2
+      cf0 = self%ambient_friction_velocity/uaz2
       rcf = sqrt(cf0/cf00)
       hrf = 4.0
       urf = uafn(hrf,z0,ala0,zl,hmx,zt,cu1,cu2)
@@ -701,10 +701,10 @@ c ======================
 c  plume rise calculation
       hsu = self%source_height
       if (self%source_height .lt. 1.0) hsu = 1.0
-      uahs = (uastr/xk)*uafn(hsu,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uahs = (self%ambient_friction_velocity/xk)*uafn(hsu,z0,ala0,zl,hmx,zt,cu1,cu2)
 
       betu = .4 + 1.2*uahs/self%vertical_vapor_velocity
-      hprm = 1.0363*self%vertical_vapor_velocity*self%source_half_width/(betu*sqrt(uahs*uastr))
+      hprm = 1.0363*self%vertical_vapor_velocity*self%source_half_width/(betu*sqrt(uahs*self%ambient_friction_velocity))
       h67 = hprm**.85714
       do 155 i=1,3
       hprt = h67*((self%source_height+hprm)**.14286)
@@ -747,7 +747,7 @@ c  dense gas jet plume rise
 c  momentum or buoyant jet plume rise
          hprb = 1.7254*self%gravitational_constant
      1     *(self%ambient_air_density-rho)*self%vertical_vapor_velocity*self%source_half_width*self%source_half_width/
-     1     (self%ambient_air_density*uahs*uastr*uastr)
+     1     (self%ambient_air_density*uahs*self%ambient_friction_velocity*self%ambient_friction_velocity)
          h35 = hprb**.6
          do 160 i=1,3
          hprt = h35*((self%source_height+hprb)**.4)
@@ -756,7 +756,7 @@ c  momentum or buoyant jet plume rise
          hpr = sqrt(hprb*hprb+hprm*hprm)
          self%source_height = self%source_height+hpr
          if (self%source_height .gt. (hmx-self%source_half_width))  self%source_height = hmx-self%source_half_width
-         self%horizontal_vapor_velocity = (uastr/xk)*uafn(self%source_height,z0,ala0,zl,hmx,zt,cu1,cu2)
+         self%horizontal_vapor_velocity = (self%ambient_friction_velocity/xk)*uafn(self%source_height,z0,ala0,zl,hmx,zt,cu1,cu2)
          self%vertical_vapor_velocity = 0.
          rho = self%ambient_air_density
          self%source_gas_density = self%ambient_air_density
@@ -939,7 +939,7 @@ c ============================
       t0 = self%ambient_temperature
       tp(1) = self%ambient_temperature
 
-      z1 = sr3*aa*xk*xk*xk*urf*dx/uastr
+      z1 = sr3*aa*xk*xk*xk*urf*dx/self%ambient_friction_velocity
       z2 = (3.*z1*z0*z0)**(1./3.)
       fhz = log(1.+z2/z0)
       he = (3.*z1)/(fhz*fhz)
@@ -968,7 +968,7 @@ c ============================
       u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   280 continue
-      uab = (uastr/xk)*(uab-u2)/30.
+      uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
       uab0 = uab
       uap(1) = 0.
       u = uab
@@ -1222,7 +1222,7 @@ c ======================================
       u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   405 continue
-      uab = (uastr/xk)*(uab-u2)/30.
+      uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
       uab0 = uab
       uap(1) = uab
 
@@ -1240,7 +1240,7 @@ c ======================================
          ubs20 = uastr2
          ustr2 = uastr2 + cf1*delu*delu
         else
-         umgs = (uastr/uab)*self%horizontal_vapor_velocity
+         umgs = (self%ambient_friction_velocity/uab)*self%horizontal_vapor_velocity
          ubs20 = umgs*umgs
          ustr2 = ubs20 + cf1*delu*delu
       endif
@@ -1281,7 +1281,7 @@ c ========================================
       dxpr = xpr/(amsfm-1.)
 
       zcr = self%source_height+hpr
-      uab = (uastr/xk)*uafn(zcr,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uab = (self%ambient_friction_velocity/xk)*uafn(zcr,z0,ala0,zl,hmx,zt,cu1,cu2)
       uab0 = uab
       cfpr = 3.*(2.+(xpr/self%source_half_width))*cf1
       cmpr = sqrt((1.-cm)*(1.-cm) + 4.*cm*cfpr)
@@ -1420,7 +1420,7 @@ c ========================================
          ubs20 = uastr2
          ustr2 = uastr2 + cf1*delu*delu
         else
-         umgs = (uastr/uab)*u
+         umgs = (self%ambient_friction_velocity/uab)*u
          ubs20 = umgs*umgs
          ustr2 = ubs20 + cf1*delu*delu
       endif
@@ -1775,7 +1775,7 @@ c ================
       u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   710 continue
-      uab = (uastr/xk)*(uab-u2)/30.
+      uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
       al = ala
       if (al .lt. 0.)  then
          stby = 1.-rcf*10.*al
@@ -1783,7 +1783,7 @@ c ================
          stby = 1./(1.+rcf*10.*al)
       endif
       uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
-      w = (urf/uah)*aa*xk*uastr
+      w = (urf/uah)*aa*xk*self%ambient_friction_velocity
       wp(1) = w
       atot = afa*stby
       rab = .5*sigb/atot
@@ -2044,7 +2044,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -2072,7 +2072,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -2149,7 +2149,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -2175,7 +2175,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -2279,7 +2279,7 @@ c  solves the steady state plume conservation equations
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -2308,7 +2308,7 @@ c  solves the steady state plume conservation equations
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -2366,7 +2366,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -2395,7 +2395,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -2458,7 +2458,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -2495,7 +2495,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -2786,7 +2786,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -2819,7 +2819,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -2845,7 +2845,7 @@ c
 c  coupled velocity, height and average ambient velocity calculation
 
 c   calculate downwind velocity
-      u1 = (uastr/xk)*uafn(htp0,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = (self%ambient_friction_velocity/xk)*uafn(htp0,z0,ala0,zl,hmx,zt,cu1,cu2)
       u = u0
       bb = bb0+bbv-bbv0
       h = r/(rho*u*bb)
@@ -2875,8 +2875,8 @@ c   calculate downwind velocity
       endif
 
       htph = .5*(htp0 + htp)
-      u12 = (uastr/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (uastr/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
       if (uab .gt. u2)  uab = u2
 
@@ -2933,8 +2933,8 @@ c   calculate downwind velocity
          htp = h
       endif
       htph = .5*(htp0+htp)
-      u12 = (uastr/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (uastr/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
       if (uab .gt. u2)  uab = u2
 
@@ -3015,7 +3015,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -3046,7 +3046,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -3071,7 +3071,7 @@ c
 
 c  coupled velocity, height and average ambient velocity calculation
 
-      u1 = (uastr/xk)*uafn(htp0,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = (self%ambient_friction_velocity/xk)*uafn(htp0,z0,ala0,zl,hmx,zt,cu1,cu2)
       gey = bbx0*h0/(h0*(bbx0+bb0)+2.*bb0*bbx0)
       gex = (bb0/bbx0)*gey
       rey = (rho0/rho)**gey
@@ -3100,8 +3100,8 @@ c  coupled velocity, height and average ambient velocity calculation
       endif
 
       htph = .5*(htp0+htp)
-      u12 = (uastr/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (uastr/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
 
       if (sfu .eq. 0.) then
@@ -3174,7 +3174,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -3208,7 +3208,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -3239,7 +3239,7 @@ c  vertical entrainment
       vbar = .5*vg
       vrho = vbar*self%ambient_air_density/rho
       delu = (uab-u) * (self%ambient_air_density/rho)
-      cf = uastr/uab
+      cf = self%ambient_friction_velocity/uab
       umgs = cf * u
       ugmgs = cf * ubar
       vmgs = cf * vbar
@@ -3339,7 +3339,7 @@ c  horizontal entrainment
         else
           phmr = 1. + 5.*ala0*zrf/(1.+zrf/zl)
       endif
-      vxs = .6*uastr*frzr*phmr*fgr/xk
+      vxs = .6*self%ambient_friction_velocity*frzr*phmr*fgr/xk
       vax = atot*uab/(1.+rab*bbx/sr3)
       vx = sqrt(vax*vax+vxs*vxs)
 
@@ -3391,7 +3391,7 @@ c
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -3418,7 +3418,7 @@ c
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -3485,7 +3485,7 @@ c  writes the input values used in the problem
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -3515,7 +3515,7 @@ c  writes the input values used in the problem
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
@@ -3615,7 +3615,7 @@ c   ambient meteorological variables
      1              self%ambient_wind_speed,
      1              self%ambient_temperature,
      1              self%relative_humidity,
-     1              uastr,
+     1              self%ambient_friction_velocity,
      1              stab,
      1              ala,
      1              z0
@@ -3667,7 +3667,7 @@ c  writes the instantaneous spatially averaged cloud properties
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -3696,7 +3696,7 @@ c  writes the instantaneous spatially averaged cloud properties
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
 
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
@@ -3757,7 +3757,7 @@ c  calculates and writes the time averaged volume concentration
       real(4) :: wma,cpa,hrf,urf
       real(4) :: cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       real(4) :: cth,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
-      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      real(4) :: sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       real(4) :: xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       real(4) :: f,dy,betacp,sigp,cvpm,zm
       real(4) :: fcx,fcy,fcz,cvpt,bbcp,ccp
@@ -3793,7 +3793,7 @@ c  calculates and writes the time averaged volume concentration
       common cf0,cf1,cri,tutrd,f17,f19,fu,ft,fv,sfu
       common cth,keval,uab,uab0,u0,cws,wss,ala0,zt,cu1,cu2
 
-      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,uastr,ala
+      common sr33,sctst,slup,sr2,srpi,cf00,sigb,tav0,ala
       common xk,aa,uastr2,rcf,afa,vh,stb,zl,hmx,ubs2,ubs20,xstr
       common nx,f(15),dy(15),betacp(61),sigp(61),cvpm(61),zm(61)
       common fcx(61),fcy(6,61),fcz(5,61),cvpt(6,4,61),bbcp(61),ccp(61)
