@@ -162,7 +162,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,zp,
+      real(4) :: zp,
      1           xffm,tav,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -213,7 +213,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -268,8 +268,8 @@ c  ============
       read (2,108) tav,xffm,(zp(i),i=1,4)
   108 format (f10.3)
 
-  110 read (2,108) z0
-       if(z0 .lt. 0.) return
+  110 read (2,108) self%surface_roughness_height
+       if(self%surface_roughness_height .lt. 0.) return
 
       read (2,108) self%ambient_measurement_height,
      1             self%ambient_wind_speed,
@@ -282,12 +282,12 @@ c ================================
 c  calculate stability parameters
 c ================================
 
-      al1 = .0081/(z0**.3044)
-      if (z0 .gt. .0111) then
-         al2 = .0385/(z0**.1715)
-         al3 = .0875/(z0**.1028)
+      al1 = .0081/(self%surface_roughness_height**.3044)
+      if (self%surface_roughness_height .gt. .0111) then
+         al2 = .0385/(self%surface_roughness_height**.1715)
+         al3 = .0875/(self%surface_roughness_height**.1028)
        else
-         al2 = al1 +.0137/(z0**.1715) + .0218
+         al2 = al1 +.0137/(self%surface_roughness_height**.1715) + .0218
          al3 = al2 +.0557
       endif
 
@@ -371,7 +371,7 @@ c =============
      1 '  tsd   =',f10.0/'  qtis  =',f10.2/'  hs    =',f10.2/
      1 '  tav   =',f10.2/'  xffm  =',f10.2/('  zp(',i1,') =',f10.2))
 
-      write (3,115) z0,
+      write (3,115) self%surface_roughness_height,
      1              self%ambient_measurement_height,
      1              self%ambient_wind_speed,
      1              self%ambient_temperature,
@@ -542,10 +542,10 @@ c  check if source below mixing layer height
 
 c  initialize velocity function
 
-      zt = 2.71828183*z0
+      zt = 2.71828183*self%surface_roughness_height
       cu1 = 1./zt
       cu2 = 0.
-      uf = uafn(zt,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uf = uafn(zt,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       if (ala0 .lt. 0.) then
       phmi = 1./sqrt(sqrt(1.-16.*zl*ala0))
       gu = -8.*ala0/(1.-phmi)
@@ -559,14 +559,15 @@ c  initialize velocity function
 
 c  calculatre friction velocity
 
-      self%ambient_friction_velocity = xk*self%ambient_wind_speed/uafn(self%ambient_measurement_height,z0,ala0,zl,hmx,zt,cu1,cu2)
+      self%ambient_friction_velocity = xk*self%ambient_wind_speed/uafn(self%ambient_measurement_height
+     1                                 ,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uastr2 = self%ambient_friction_velocity*self%ambient_friction_velocity
-      uaz2 = (self%ambient_friction_velocity/xk)*uafn(2.,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uaz2 = (self%ambient_friction_velocity/xk)*uafn(2.,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       tffm = xffm/uaz2
       cf0 = self%ambient_friction_velocity/uaz2
       rcf = sqrt(cf0/cf00)
       hrf = 4.0
-      urf = uafn(hrf,z0,ala0,zl,hmx,zt,cu1,cu2)
+      urf = uafn(hrf,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
 
 
 c
@@ -701,7 +702,7 @@ c ======================
 c  plume rise calculation
       hsu = self%source_height
       if (self%source_height .lt. 1.0) hsu = 1.0
-      uahs = (self%ambient_friction_velocity/xk)*uafn(hsu,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uahs = (self%ambient_friction_velocity/xk)*uafn(hsu,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
 
       betu = .4 + 1.2*uahs/self%vertical_vapor_velocity
       hprm = 1.0363*self%vertical_vapor_velocity*self%source_half_width/(betu*sqrt(uahs*self%ambient_friction_velocity))
@@ -756,7 +757,8 @@ c  momentum or buoyant jet plume rise
          hpr = sqrt(hprb*hprb+hprm*hprm)
          self%source_height = self%source_height+hpr
          if (self%source_height .gt. (hmx-self%source_half_width))  self%source_height = hmx-self%source_half_width
-         self%horizontal_vapor_velocity = (self%ambient_friction_velocity/xk)*uafn(self%source_height,z0,ala0,zl,hmx,zt,cu1,cu2)
+         self%horizontal_vapor_velocity = (self%ambient_friction_velocity/xk)*uafn(self%source_height,
+     1    self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
          self%vertical_vapor_velocity = 0.
          rho = self%ambient_air_density
          self%source_gas_density = self%ambient_air_density
@@ -940,12 +942,12 @@ c ============================
       tp(1) = self%ambient_temperature
 
       z1 = sr3*aa*xk*xk*xk*urf*dx/self%ambient_friction_velocity
-      z2 = (3.*z1*z0*z0)**(1./3.)
-      fhz = log(1.+z2/z0)
+      z2 = (3.*z1*self%surface_roughness_height*self%surface_roughness_height)**(1./3.)
+      fhz = log(1.+z2/self%surface_roughness_height)
       he = (3.*z1)/(fhz*fhz)
       do 275 i=1,5
-      fhz = log(1.+he/z0)
-      shz = he + z0
+      fhz = log(1.+he/self%surface_roughness_height)
+      shz = he + self%surface_roughness_height
       fhh = shz*fhz*fhz - 2.*shz*fhz + he + he - z1
       he = he - fhh/(fhz*fhz)
   275 continue
@@ -964,8 +966,8 @@ c ============================
       do 280 i=1,5
       h1 = h1 + dh
       h2 = h2 + dh
-      u1 = uafn(h1,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = uafn(h1,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = uafn(h2,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   280 continue
       uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
@@ -1218,8 +1220,8 @@ c ======================================
       do 405 i=1,5
       h1 = h1 + dh
       h2 = h2 + dh
-      u1 = uafn(h1,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = uafn(h1,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = uafn(h2,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   405 continue
       uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
@@ -1244,7 +1246,7 @@ c ======================================
          ubs20 = umgs*umgs
          ustr2 = ubs20 + cf1*delu*delu
       endif
-      uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uah = uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       w = (urf/uah)* aa*xk*sqrt(ustr2)
       wp(1) = w
 
@@ -1281,7 +1283,7 @@ c ========================================
       dxpr = xpr/(amsfm-1.)
 
       zcr = self%source_height+hpr
-      uab = (self%ambient_friction_velocity/xk)*uafn(zcr,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uab = (self%ambient_friction_velocity/xk)*uafn(zcr,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab0 = uab
       cfpr = 3.*(2.+(xpr/self%source_half_width))*cf1
       cmpr = sqrt((1.-cm)*(1.-cm) + 4.*cm*cfpr)
@@ -1424,7 +1426,7 @@ c ========================================
          ubs20 = umgs*umgs
          ustr2 = ubs20 + cf1*delu*delu
       endif
-      uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uah = uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       w = (urf/uah)* aa*xk*sqrt(ustr2)
       wp(msfm) = w
 
@@ -1739,11 +1741,11 @@ c ================
       betaxp(1) = sqrt(bbx*bbx-bx*bx)/sr3
 
       z1 = sr3*aa*xk*xk*urf*dt
-      z2 = sqrt(2.*z1*z0)
-      he = (2.*z2)/log(1.+z2/z0)
+      z2 = sqrt(2.*z1*self%surface_roughness_height)
+      he = (2.*z2)/log(1.+z2/self%surface_roughness_height)
       do 708 i=1,5
-      fhz = log(1.+he/z0)
-      shz = he + z0
+      fhz = log(1.+he/self%surface_roughness_height)
+      shz = he + self%surface_roughness_height
       he = he - (shz*fhz - he - z1)/fhz
   708 continue
       w = he/(sr3*dt)
@@ -1771,8 +1773,8 @@ c ================
       do 710 i=1,5
       h1 = h1 + dh
       h2 = h2 + dh
-      u1 = uafn(h1,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = uafn(h2,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = uafn(h1,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = uafn(h2,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = uab + 4.*u1 + 2.*u2
   710 continue
       uab = (self%ambient_friction_velocity/xk)*(uab-u2)/30.
@@ -1782,7 +1784,7 @@ c ================
         else
          stby = 1./(1.+rcf*10.*al)
       endif
-      uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uah = uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       w = (urf/uah)*aa*xk*self%ambient_friction_velocity
       wp(1) = w
       atot = afa*stby
@@ -2055,7 +2057,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
@@ -2158,7 +2160,7 @@ c
       real(4) :: gw,fw,cp,facss,facp1,facp2,sfx,sfy,sfz
       real(4) :: vp,wp,hp,bbp,vgp,up,bp,rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp,bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
+      real(4) :: nzpm,zp,xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
       real(4) :: qint,qint0,cm0,cmwv,cmwv0,cmev,cmev0,cp0,cpwv,cpwl
@@ -2188,7 +2190,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2290,7 +2292,7 @@ c  solves the steady state plume conservation equations
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp,
+      real(4) :: nzpm,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
@@ -2321,7 +2323,7 @@ c  solves the steady state plume conservation equations
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2377,7 +2379,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp,
+      real(4) :: nzpm,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax
@@ -2408,7 +2410,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2469,7 +2471,7 @@ c
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp
+      real(4) :: nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -2508,7 +2510,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2797,7 +2799,7 @@ c
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp
+      real(4) :: nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -2832,7 +2834,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -2845,7 +2847,8 @@ c
 c  coupled velocity, height and average ambient velocity calculation
 
 c   calculate downwind velocity
-      u1 = (self%ambient_friction_velocity/xk)*uafn(htp0,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = (self%ambient_friction_velocity/xk)*uafn(htp0,self%surface_roughness_height,
+     1      ala0,zl,hmx,zt,cu1,cu2)
       u = u0
       bb = bb0+bbv-bbv0
       h = r/(rho*u*bb)
@@ -2875,8 +2878,8 @@ c   calculate downwind velocity
       endif
 
       htph = .5*(htp0 + htp)
-      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
       if (uab .gt. u2)  uab = u2
 
@@ -2933,8 +2936,8 @@ c   calculate downwind velocity
          htp = h
       endif
       htph = .5*(htp0+htp)
-      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
       if (uab .gt. u2)  uab = u2
 
@@ -3026,7 +3029,7 @@ c
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp
+      real(4) :: nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -3059,7 +3062,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3071,7 +3074,7 @@ c
 
 c  coupled velocity, height and average ambient velocity calculation
 
-      u1 = (self%ambient_friction_velocity/xk)*uafn(htp0,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u1 = (self%ambient_friction_velocity/xk)*uafn(htp0,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       gey = bbx0*h0/(h0*(bbx0+bb0)+2.*bb0*bbx0)
       gex = (bb0/bbx0)*gey
       rey = (rho0/rho)**gey
@@ -3100,8 +3103,8 @@ c  coupled velocity, height and average ambient velocity calculation
       endif
 
       htph = .5*(htp0+htp)
-      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,z0,ala0,zl,hmx,zt,cu1,cu2)
-      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      u12 = (self%ambient_friction_velocity/xk)*uafn(htph,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
+      u2 = (self%ambient_friction_velocity/xk)*uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       uab = (htp0*uab0+(u1+4.*u12+u2)*(htp-htp0)/6.)/htp
 
       if (sfu .eq. 0.) then
@@ -3185,7 +3188,7 @@ c
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp,
+      real(4) :: nzpm,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -3221,7 +3224,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3308,7 +3311,7 @@ c  vertical entrainment
             phiitb = 1. + 5.*hbt*al
          endif
       endif
-      uah = uafn(htp,z0,ala0,zl,hmx,zt,cu1,cu2)
+      uah = uafn(htp,self%surface_roughness_height,ala0,zl,hmx,zt,cu1,cu2)
       w = (urf/uah)*aa*xk*ustr*(fpr/phiit + fprb/phiitb)
 
 c  horizontal entrainment
@@ -3332,7 +3335,7 @@ c  horizontal entrainment
          sig = (h-zc)/sr3
       endif
       zrf = zc+.5*sig
-      frzr = zrf/(zrf+z0)
+      frzr = zrf/(zrf+self%surface_roughness_height)
       fgr = 1. -zrf/hmx
       if(stb .lt. 0.) then
           phmr = phimi + (1.-phimi)/sqrt(1.+phgam*zrf)
@@ -3402,7 +3405,7 @@ c
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp
+      real(4) :: nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -3431,7 +3434,7 @@ c
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3496,7 +3499,7 @@ c  writes the input values used in the problem
       real(4) :: rhop,cmp,tp,cvp,betap,xp,cmwvp
       real(4) :: cmevp,uap,zcp,timp,bbxp,ugp,vxp
       real(4) :: bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp
+      real(4) :: nzpm,zp
       real(4) :: xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0
       real(4) :: ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax
@@ -3528,7 +3531,7 @@ c  writes the input values used in the problem
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3618,7 +3621,7 @@ c   ambient meteorological variables
      1              self%ambient_friction_velocity,
      1              self%stability_class,
      1              self%inverse_length,
-     1              z0
+     1              self%surface_roughness_height
 
   104 format (//'ambient meteorological properties'//,1p,
      1 ' molecular weight of ambient air (kg)   ',10x,'- wmae  =',e12.4/
@@ -3678,7 +3681,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,nzpm,zp,
+      real(4) :: nzpm,zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,idpf,nxtr,bx,bx0,bvx,bvx0,betax,
@@ -3710,7 +3713,7 @@ c  writes the instantaneous spatially averaged cloud properties
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
@@ -3768,7 +3771,7 @@ c  calculates and writes the time averaged volume concentration
      1           rhop,cmp,tp,cvp,betap,xp,cmwvp,
      1           cmevp,uap,zcp,timp,bbxp,ugp,vxp,
      1           bxp,betaxp,qintp,tcld,cmwp,xccp,tccp
-      real(4) :: z0,zp,
+      real(4) :: zp,
      1           xffm,tav,msfm,mnfm,mffm,tffm
       real(4) :: tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
      1           ug,ug0,fug,phimi,phgam,bx,bx0,bvx,bvx0,betax,
@@ -3806,7 +3809,7 @@ c  calculates and writes the time averaged volume concentration
      1 cmevp(61),uap(61),zcp(61),timp(61),bbxp(61),ugp(61),vxp(61),
      1 bxp(61),betaxp(61),qintp(61),tcld(61),cmwp(61),xccp(61),tccp(61)
 
-      common z0,nzpm,zp(5),
+      common nzpm,zp(5),
      1 xffm,tav,msfm,mnfm,mffm,tffm
 
       common tim,timn,vx,bbx,bbx0,gx,rmi,bbvx,bbvx0,
