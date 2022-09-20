@@ -16,16 +16,15 @@ if (NOT ELEMENTS_BUILD_EXAMPLES)
    add_subdirectory(${ELEMENTS_ROOT} elements)
 endif()
 
-set(ELEMENTS_APP_PROJECT "EmptyStarter")
-set(ELEMENTS_APP_TITLE "Empty Starter")
-set(ELEMENTS_APP_COPYRIGHT "Copyright (c) 2016-2020 Joel de Guzman")
-set(ELEMENTS_APP_ID "com.cycfi.empty-starter")
-set(ELEMENTS_APP_VERSION "1.0")
+set(ELEMENTS_APP_PROJECT "SlabGUI")
+set(ELEMENTS_APP_TITLE "SLAB")
+set(ELEMENTS_APP_COPYRIGHT "Copyright (c) 2022 SLAB")
+set(ELEMENTS_APP_ID "letalib.slab")
+set(ELEMENTS_APP_VERSION "0.0.1")
 
 set(ELEMENTS_APP_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 # For your custom application icon on macOS or Windows see cmake/AppIcon.cmake module
 include(AppIcon)
 include(ElementsConfigApp)
-
 
